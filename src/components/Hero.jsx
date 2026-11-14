@@ -207,15 +207,8 @@ export const Hero = () => {
             />
           )}
 
-          {/* Cinematic Vignette Overlays (Soft, so the pizza stays crystal clear) */}
-          <div 
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: 'radial-gradient(ellipse at center, rgba(10,6,2,0.05) 0%, rgba(10,6,2,0.45) 70%, rgba(10,6,2,0.85) 100%)'
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0602] via-transparent to-transparent pointer-events-none h-40 bottom-0" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0A0602]/70 via-transparent to-transparent pointer-events-none h-28 top-0" />
+          {/* Clean Viewport: No Dark Overlay Bars or Lines */}
+          <div className="absolute inset-0 bg-black/10 pointer-events-none" />
 
           {/* Entrance Title & Scroll Hint (Fades out gently so the pizza bake animation is completely clear) */}
           <div 
@@ -255,13 +248,7 @@ export const Hero = () => {
             </div>
           </div>
 
-          {/* Progress Bar at Bottom of Viewport */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 z-20">
-            <div 
-              className="h-full bg-gradient-to-r from-trattoria-red to-trattoria-gold transition-all duration-150"
-              style={{ width: `${Math.round(scrollProgress * 100)}%` }}
-            />
-          </div>
+
         </div>
       </section>
 
