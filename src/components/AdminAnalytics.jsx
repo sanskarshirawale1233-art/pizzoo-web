@@ -3,12 +3,14 @@ import {
   TrendingUp, ShoppingBag, Utensils, PhoneCall, 
   Search, Printer, FileText, RefreshCw, X, Users, FileSpreadsheet, Trash2, AlertTriangle, Download 
 } from 'lucide-react';
-import { useKds } from '../context/KdsContext';
-
 export const AdminAnalytics = () => {
-  const { markOrderPaid, refetchOrders } = useKds();
-
-  const [metrics, setMetrics] = useState(null);
+  const [metrics, setMetrics] = useState({
+    revenueToday: 0,
+    revenueWeek: 0,
+    totalOrders: 0,
+    dineInCount: 0,
+    takeoutCount: 0
+  });
   const [receipts, setReceipts] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -177,7 +179,13 @@ export const AdminAnalytics = () => {
 
   const handleTogglePaymentStatus = async (receiptId, orderId, currentStatus) => {
     const isNowPaid = currentStatus !== 'PAID';
-    await markOrderPaid(orderId, isNowPaid);
+    try {
+      await fetch(`/api/orders/${orderId}/pay`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPaid: isNowPaid })
+      });
+    } catch (e) {}
     fetchAnalytics();
     if (selectedReceipt) {
       setSelectedReceipt(prev => prev ? { ...prev, paymentStatus: isNowPaid ? 'PAID' : 'UNPAID' } : null);

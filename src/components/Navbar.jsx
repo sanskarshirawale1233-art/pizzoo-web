@@ -66,7 +66,7 @@ export const Navbar = () => {
         <a 
           href="/admin/menu" 
           className="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-trattoria-gold border border-trattoria-gold/40 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full font-sans text-xs tracking-wider uppercase font-bold transition-all shadow-sm hover:scale-105"
-          title="Manage Menu / Add New Items (PIN: 1234)"
+          title="Manage Menu / Add New Items (PIN: 0909)"
         >
           <span>👑</span>
           <span className="hidden sm:inline">Add / Manage Menu</span>
@@ -120,7 +120,7 @@ export const Navbar = () => {
             className="flex items-center gap-2 text-trattoria-gold font-bold p-3 bg-trattoria-gold/15 rounded-xl border border-trattoria-gold/30"
           >
             <span>👑</span>
-            <span>Add / Manage Menu Items (PIN: 1234)</span>
+            <span>Add / Manage Menu Items (PIN: 0909)</span>
           </a>
 
           <a href="/#home" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-trattoria-gold py-1">

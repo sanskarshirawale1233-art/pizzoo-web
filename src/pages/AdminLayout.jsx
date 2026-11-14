@@ -1,20 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
-  ChefHat, Utensils, TrendingUp, Volume2, VolumeX, 
-  ArrowLeft, Lock, KeyRound, ShieldCheck, X 
+  Utensils, TrendingUp, ArrowLeft, KeyRound, ShieldCheck, X, PlusCircle 
 } from 'lucide-react';
-import { useKds } from '../context/KdsContext';
-import { KdsApp } from './KdsApp';
 import { AdminMenuManager } from '../components/AdminMenuManager';
 import { AdminAnalytics } from '../components/AdminAnalytics';
 
 export const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { soundEnabled, setSoundEnabled } = useKds();
 
-  // Authentication State
+  // Authentication State with PIN: 0909
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return sessionStorage.getItem('pizzoo_admin_auth') === 'true';
   });
@@ -23,7 +19,7 @@ export const AdminLayout = () => {
 
   const handlePinSubmit = (e) => {
     e.preventDefault();
-    if (pin === '1234' || pin === '1717' || pin === '1924') {
+    if (pin.trim() === '0909') {
       sessionStorage.setItem('pizzoo_admin_auth', 'true');
       setIsAuthenticated(true);
       setPinError(false);
@@ -60,11 +56,11 @@ export const AdminLayout = () => {
           </div>
 
           <span className="font-sans text-xs tracking-widest text-trattoria-red font-bold uppercase block mb-1">
-            Area Riservata Staff
+            Owner Access Only
           </span>
-          <h3 className="font-serif text-2xl font-black text-stone-900">Admin Ecosystem Passcode</h3>
+          <h3 className="font-serif text-2xl font-black text-stone-900">Protected Menu Manager</h3>
           <p className="text-xs text-stone-500 mt-1 mb-6 font-body">
-            Enter PIN to access KDS, Menu Manager & Sales Analytics (Passcode: <strong>1234</strong>)
+            Enter PIN to add & manage menu items or view total revenue (PIN: <strong>0909</strong>)
           </p>
 
           <form onSubmit={handlePinSubmit} className="space-y-4">
@@ -83,15 +79,15 @@ export const AdminLayout = () => {
 
             {pinError && (
               <p className="text-xs text-trattoria-red font-sans font-bold">
-                Incorrect passcode! Enter <strong>1234</strong> to unlock.
+                Incorrect PIN! Enter <strong>0909</strong> to unlock.
               </p>
             )}
 
             <button 
               type="submit"
-              className="w-full bg-trattoria-red hover:bg-trattoria-redHover text-white py-3.5 rounded-xl font-sans text-xs uppercase tracking-widest font-bold shadow-md transition-all"
+              className="w-full bg-trattoria-red hover:bg-trattoria-redHover text-white py-3.5 rounded-xl font-sans text-xs uppercase tracking-widest font-bold shadow-md transition-all active:scale-98"
             >
-              Unlock Admin Panel
+              Unlock Dashboard
             </button>
           </form>
         </div>
@@ -99,10 +95,12 @@ export const AdminLayout = () => {
     );
   }
 
+  const isRevenueActive = currentPath.includes('/revenue') || currentPath.includes('/analytics');
+
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-stone-900 font-sans selection:bg-trattoria-red pb-16">
-      {/* Admin Ecosystem Top Header Bar */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-stone-200 shadow-sm">
+      {/* Top Header Bar */}
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
           
           {/* Logo & Back button */}
@@ -110,87 +108,59 @@ export const AdminLayout = () => {
             <button 
               onClick={handleExitAdmin}
               className="p-2 bg-stone-100 hover:bg-stone-200 rounded-xl text-stone-600 hover:text-stone-900 transition-colors"
-              title="Return to Customer App"
+              title="Return to Customer Storefront"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-trattoria-red/10 border border-trattoria-red/20 flex items-center justify-center text-trattoria-red font-bold">
+              <div className="w-9 h-9 rounded-xl bg-trattoria-red/10 border border-trattoria-red/20 flex items-center justify-center text-trattoria-red font-bold text-lg">
                 🍕
               </div>
               <div>
-                <h1 className="font-serif text-lg font-black text-stone-900 leading-tight">Pizzoo Admin Suite</h1>
-                <span className="text-[10px] text-stone-500 font-mono block">Authentic Trattoria Management</span>
+                <h1 className="font-serif text-lg font-black text-stone-900 leading-tight">Pizzoo Owner Portal</h1>
+                <span className="text-[10px] text-stone-500 font-mono block">Bhandup West, Mumbai</span>
               </div>
             </div>
           </div>
 
-          {/* Sub-View Navigation Tabs */}
-          <nav className="flex items-center gap-1.5 bg-stone-100 p-1 rounded-2xl border border-stone-200/80">
-            <button
-              onClick={() => handleTabChange('/admin/kds')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
-                currentPath.includes('/kds') || currentPath === '/admin' || currentPath === '/.admin'
-                  ? 'bg-stone-900 text-white shadow-sm'
-                  : 'text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              <ChefHat className="w-4 h-4" />
-              <span>1. KDS (Cucina)</span>
-            </button>
-
+          {/* Strictly 2 Options: 1. Add/Manage Menu | 2. Total Revenue */}
+          <nav className="flex items-center gap-2 bg-stone-100 p-1.5 rounded-2xl border border-stone-200">
+            {/* Tab 1: Menu Adding & Management */}
             <button
               onClick={() => handleTabChange('/admin/menu')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
-                currentPath.includes('/menu')
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
+                !isRevenueActive
                   ? 'bg-stone-900 text-white shadow-sm'
                   : 'text-stone-600 hover:text-stone-900'
               }`}
             >
-              <Utensils className="w-4 h-4" />
-              <span>2. Gestione Menu</span>
+              <Utensils className="w-4 h-4 text-amber-400" />
+              <span>1. Add & Manage Menu</span>
             </button>
 
+            {/* Tab 2: Total Revenue & Sales */}
             <button
-              onClick={() => handleTabChange('/admin/analytics')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
-                currentPath.includes('/analytics')
+              onClick={() => handleTabChange('/admin/revenue')}
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
+                isRevenueActive
                   ? 'bg-stone-900 text-white shadow-sm'
                   : 'text-stone-600 hover:text-stone-900'
               }`}
             >
-              <TrendingUp className="w-4 h-4" />
-              <span>3. Vendite & Ricevute</span>
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
+              <span>2. Total Revenue & Sales</span>
             </button>
           </nav>
-
-          {/* Controls */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSoundEnabled(!soundEnabled)}
-              className={`px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 border transition-all ${
-                soundEnabled 
-                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
-                  : 'bg-stone-100 border-stone-200 text-stone-500'
-              }`}
-              title="Toggle Order Sound Chime"
-            >
-              {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-600" /> : <VolumeX className="w-4 h-4" />}
-              <span className="hidden sm:inline">{soundEnabled ? 'Chime Active' : 'Muted'}</span>
-            </button>
-          </div>
 
         </div>
       </header>
 
-      {/* Main Active Sub-View Body */}
+      {/* Main Body (Only Menu Manager or Total Revenue) */}
       <main className="max-w-7xl mx-auto px-4 md:px-8 pt-6">
-        {currentPath.includes('/menu') ? (
-          <AdminMenuManager />
-        ) : currentPath.includes('/analytics') ? (
+        {isRevenueActive ? (
           <AdminAnalytics />
         ) : (
-          <KdsApp onExitKds={handleExitAdmin} isEmbedded={true} />
+          <AdminMenuManager />
         )}
       </main>
     </div>
