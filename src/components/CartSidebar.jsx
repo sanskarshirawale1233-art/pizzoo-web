@@ -23,8 +23,8 @@ export const CartSidebar = () => {
   const [validationError, setValidationError] = useState('');
 
   // WhatsApp & SMS Order Number
-  const ORDER_PHONE = '919988992210';
-  const FORMATTED_PHONE = '+91 9988992210';
+  const ORDER_PHONE = '917738009029';
+  const FORMATTED_PHONE = '+91 7738009029';
 
   // Reset step to BASKET whenever cart opens
   useEffect(() => {
