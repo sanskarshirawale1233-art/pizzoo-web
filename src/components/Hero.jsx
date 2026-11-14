@@ -225,23 +225,18 @@ export const Hero = () => {
               transform: `translateY(${-scrollProgress * 60}px)`
             }}
           >
-            {tableId ? (
+            {tableId && (
               <div className="inline-flex items-center gap-2 bg-trattoria-red/30 border border-trattoria-red/60 text-trattoria-gold px-5 py-2 rounded-full font-sans text-xs tracking-widest uppercase mb-5 shadow-red-glow animate-pulse">
                 <QrCode className="w-4 h-4 text-trattoria-gold" />
                 <span>Tavolo {tableId} · Direct Kitchen Ordering</span>
               </div>
-            ) : (
-              <div className="inline-flex items-center gap-2 bg-trattoria-gold/15 border border-trattoria-gold/40 text-trattoria-gold px-4 py-1.5 rounded-full font-sans text-[11px] sm:text-xs tracking-widest uppercase mb-4 shadow-sm backdrop-blur-sm">
-                <Flame className="w-3.5 h-3.5 text-trattoria-red animate-bounce" />
-                <span>Artisanal Neapolitan Pizzeria · Mumbai</span>
-              </div>
             )}
 
-            <div className="flex justify-center mb-4">
+            <div className="flex justify-center mb-5">
               <img 
                 src="/logo.png" 
                 alt="Pizzoo Logo" 
-                className="h-24 sm:h-32 md:h-36 object-contain filter drop-shadow-[0_0_35px_rgba(240,165,0,0.5)]"
+                className="h-36 sm:h-48 md:h-64 object-contain filter drop-shadow-[0_0_50px_rgba(240,165,0,0.65)] hover:scale-105 transition-transform"
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             </div>
@@ -271,21 +266,12 @@ export const Hero = () => {
       </section>
 
       {/* 2. "Freshly Baked. Ready for You." Section Comes Directly BELOW the Animation */}
-      <section className="relative z-20 py-20 px-4 bg-[#0A0602] border-t border-trattoria-gold/15">
+      <section className="relative z-20 py-16 px-4 bg-[#0A0602] border-t border-trattoria-gold/15">
         <div className="max-w-4xl mx-auto text-center">
           
-          <div className="inline-flex items-center gap-2 bg-trattoria-red/25 border border-trattoria-red/60 text-trattoria-gold px-4 py-1.5 rounded-full font-sans text-xs tracking-widest uppercase mb-5 shadow-red-glow">
-            <Flame className="w-4 h-4 text-trattoria-red animate-pulse" />
-            <span>BAKED AT 450°C IN AUTHENTIC STONE OVEN</span>
-          </div>
-
-          <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-4 drop-shadow-xl">
+          <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-8 drop-shadow-xl">
             Freshly Baked. <span className="text-trattoria-gold">Ready for You.</span>
           </h2>
-
-          <p className="text-sm sm:text-base md:text-lg text-white/85 font-body max-w-xl mx-auto leading-relaxed mb-8">
-            Explore our handcrafted Veg & Non-Veg Neapolitan pizzas, loaded fries, burgers, and Italian desserts.
-          </p>
 
           {/* Action CTAs */}
           <div className="flex flex-wrap gap-3.5 justify-center items-center font-sans text-xs tracking-widest uppercase font-bold">

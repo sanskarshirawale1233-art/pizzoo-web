@@ -46,7 +46,7 @@ export const Navbar = () => {
           <img
             src="/logo.png"
             alt="Pizzoo Logo"
-            className="h-11 object-contain filter drop-shadow-[0_0_12px_rgba(240,165,0,0.4)] group-hover:scale-105 transition-transform"
+            className="h-12 md:h-13 object-contain filter drop-shadow-[0_0_12px_rgba(240,165,0,0.4)] group-hover:scale-105 transition-transform"
             onError={(e) => { e.target.style.display = 'none'; }}
           />
           <div>
