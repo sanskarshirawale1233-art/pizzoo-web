@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
-const getEnvOrStorage = (envKey, storageKey) => {
+const DEFAULT_URL = 'https://xwjcwrytplyjygfgcrwa.supabase.co';
+const DEFAULT_KEY = 'sb_publishable_w7soVC3BzCEAS-F01t7kHQ_37jsVHg0';
+
+const getEnvOrStorage = (envKey, storageKey, fallback = '') => {
   const envVal = import.meta.env[envKey];
   if (envVal && envVal.trim() && !envVal.includes('placeholder')) {
     return envVal.trim();
@@ -9,11 +12,11 @@ const getEnvOrStorage = (envKey, storageKey) => {
     const stored = localStorage.getItem(storageKey);
     if (stored && stored.trim()) return stored.trim();
   } catch {}
-  return '';
+  return fallback;
 };
 
-let currentUrl = getEnvOrStorage('VITE_SUPABASE_URL', 'pizzoo_supabase_url');
-let currentKey = getEnvOrStorage('VITE_SUPABASE_ANON_KEY', 'pizzoo_supabase_key');
+let currentUrl = getEnvOrStorage('VITE_SUPABASE_URL', 'pizzoo_supabase_url', DEFAULT_URL);
+let currentKey = getEnvOrStorage('VITE_SUPABASE_ANON_KEY', 'pizzoo_supabase_key', DEFAULT_KEY);
 
 let clientInstance = (currentUrl && currentKey) ? createClient(currentUrl, currentKey) : null;
 
