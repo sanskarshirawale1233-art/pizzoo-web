@@ -62,7 +62,7 @@ export const AdminLayout = () => {
           </span>
           <h3 className="font-serif text-2xl font-black text-stone-900">Protected Menu Manager</h3>
           <p className="text-xs text-stone-500 mt-1 mb-6 font-body">
-            Enter PIN to add & manage menu items or view total revenue (PIN: <strong>0909</strong>)
+            Enter 4-digit Owner PIN to add & manage pizzas or view revenue
           </p>
 
           <form onSubmit={handlePinSubmit} className="space-y-4">
@@ -81,7 +81,7 @@ export const AdminLayout = () => {
 
             {pinError && (
               <p className="text-xs text-trattoria-red font-sans font-bold animate-shake">
-                Incorrect PIN! Enter <strong>0909</strong> to unlock.
+                Incorrect PIN! Please try again.
               </p>
             )}
 

@@ -45,7 +45,7 @@ export const MenuSection = ({ onCustomizePizza }) => {
   }));
 
   return (
-    <section id="menu" className="py-24 px-4 bg-[#0D0700] relative">
+    <section id="menu" className="py-24 px-4 bg-[#0A0602] relative">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-12">
@@ -57,17 +57,7 @@ export const MenuSection = ({ onCustomizePizza }) => {
           </h2>
           <div className="w-16 h-1 bg-trattoria-gold mx-auto mt-4 rounded-full" />
 
-          {/* Prominent Visible Owner Add / Manage Menu Button */}
-          <div className="mt-5">
-            <a 
-              href="/admin/menu"
-              className="inline-flex items-center gap-2 bg-amber-500/15 hover:bg-amber-500/25 text-trattoria-gold border border-trattoria-gold/40 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-md hover:scale-105"
-            >
-              <span>👑</span>
-              <span>Owner: Add / Edit Menu Items</span>
-              <span>➔</span>
-            </a>
-          </div>
+
         </div>
 
         {/* Category Tabs */}
@@ -99,7 +89,7 @@ export const MenuSection = ({ onCustomizePizza }) => {
                 </a>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {displayVegPizzas.map((pizza) => (
                   <PizzaCard key={pizza.id} pizza={pizza} onCustomize={onCustomizePizza} />
                 ))}
@@ -120,7 +110,7 @@ export const MenuSection = ({ onCustomizePizza }) => {
                 </a>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {displayNonVegPizzas.map((pizza) => (
                   <PizzaCard key={pizza.id} pizza={pizza} onCustomize={onCustomizePizza} />
                 ))}

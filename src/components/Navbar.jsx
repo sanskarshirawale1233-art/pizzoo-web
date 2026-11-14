@@ -37,8 +37,12 @@ export const Navbar = () => {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 h-[70px] bg-[#0A0602]/95 backdrop-blur-md border-b border-trattoria-gold/20 px-4 md:px-8 flex items-center justify-between">
-        {/* Brand Logo & Tagline */}
-        <a href="/#home" className="flex items-center gap-3 group">
+        {/* Brand Logo & Tagline (Tapping opens Owner PIN modal) */}
+        <div 
+          onClick={handleOpenPinModal} 
+          className="flex items-center gap-3 group cursor-pointer select-none"
+          title="Pizzoo Pizzeria"
+        >
           <img
             src="/logo.png"
             alt="Pizzoo Logo"
@@ -53,7 +57,7 @@ export const Navbar = () => {
               Italian Pizzeria
             </span>
           </div>
-        </a>
+        </div>
 
         {/* Dine-In Table Badge */}
         {tableId && (
@@ -133,14 +137,7 @@ export const Navbar = () => {
               </div>
             )}
 
-            <button
-              type="button"
-              onClick={handleOpenPinModal}
-              className="flex items-center gap-2 text-trattoria-gold font-bold p-3 bg-trattoria-gold/15 rounded-xl border border-trattoria-gold/30 text-left"
-            >
-              <span>👑</span>
-              <span>Add / Manage Menu Items</span>
-            </button>
+
 
             <a href="/#home" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-trattoria-gold py-1">
               Home

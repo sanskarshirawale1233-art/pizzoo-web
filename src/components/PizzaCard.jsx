@@ -10,15 +10,15 @@ export const PizzaCard = ({ pizza, onCustomize }) => {
     <>
       <div 
         onClick={() => isAvailable && onCustomize(pizza)}
-        className={`bg-white/[0.03] border rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between group relative ${
+        className={`bg-white/[0.03] border rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between h-full group relative ${
           isAvailable 
             ? 'border-white/10 hover:-translate-y-2 hover:border-trattoria-gold/50 hover:shadow-trattoria cursor-pointer' 
             : 'border-amber-500/30 opacity-60 cursor-not-allowed'
         }`}
       >
-        <div>
+        <div className="flex flex-col flex-1">
           {/* Image & Badges */}
-          <div className="relative h-48 overflow-hidden bg-black/80">
+          <div className="relative w-full aspect-[16/10] overflow-hidden bg-black/80">
             <img 
               src={pizza.img} 
               alt={pizza.name} 
@@ -28,7 +28,7 @@ export const PizzaCard = ({ pizza, onCustomize }) => {
                 e.target.src = 'https://images.unsplash.com/photo-1548365328-8c6db3220e4c?w=600';
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0D0700] via-transparent to-transparent opacity-80" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0A0602] via-transparent to-transparent opacity-80" />
 
             {/* Click Photo to Zoom Overlay Icon */}
             <button
@@ -69,7 +69,7 @@ export const PizzaCard = ({ pizza, onCustomize }) => {
           </div>
 
           {/* Card Body */}
-          <div className="p-5">
+          <div className="p-5 flex-1 flex flex-col">
             <h3 className="font-serif text-xl font-bold text-white group-hover:text-trattoria-gold transition-colors">
               {pizza.name}
             </h3>
@@ -81,7 +81,7 @@ export const PizzaCard = ({ pizza, onCustomize }) => {
             </p>
 
             {/* Key ingredients chips */}
-            <div className="flex flex-wrap gap-1.5 mb-4">
+            <div className="flex flex-wrap gap-1.5 mb-2 mt-auto">
               {pizza.ingredients?.slice(0, 3).map((ing, i) => (
                 <span key={i} className="text-[10px] font-sans bg-white/5 text-white/70 px-2 py-0.5 rounded border border-white/10">
                   {ing}
@@ -92,7 +92,7 @@ export const PizzaCard = ({ pizza, onCustomize }) => {
         </div>
 
         {/* Card Footer */}
-        <div className="p-5 pt-0 border-t border-white/5 flex items-center justify-between mt-auto">
+        <div className="p-5 pt-3 border-t border-white/5 flex items-center justify-between mt-auto">
           <div>
             <span className="text-[10px] font-sans text-trattoria-gold uppercase tracking-wider block">From</span>
             <span className="font-serif text-2xl font-bold text-trattoria-gold">
@@ -115,7 +115,7 @@ export const PizzaCard = ({ pizza, onCustomize }) => {
             {isAvailable ? (
               <>
                 <Plus className="w-4 h-4" />
-                <span>View & Order</span>
+                <span>+ View & Order</span>
               </>
             ) : (
               <span>Sold Out</span>
