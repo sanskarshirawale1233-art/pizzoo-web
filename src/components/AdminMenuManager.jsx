@@ -27,6 +27,11 @@ CREATE TABLE IF NOT EXISTS public.menu_items (
 
 ALTER TABLE public.menu_items ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow public read" ON public.menu_items;
+DROP POLICY IF EXISTS "Allow public insert" ON public.menu_items;
+DROP POLICY IF EXISTS "Allow public update" ON public.menu_items;
+DROP POLICY IF EXISTS "Allow public delete" ON public.menu_items;
+
 CREATE POLICY "Allow public read" ON public.menu_items FOR SELECT USING (true);
 CREATE POLICY "Allow public insert" ON public.menu_items FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow public update" ON public.menu_items FOR UPDATE USING (true);
