@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIZZOO - 100% Pure Veg Handcrafted Italian Pizzeria | Bhandup West</title>
+  <meta name="description" content="Order authentic handcrafted veg Italian pizzas from PIZZOO in Bhandup West, Mumbai. Fast WhatsApp & SMS ordering. Free local delivery & takeaway.">
+
+  <!-- Google Fonts: Inter & Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              red: '#e31837',        /* Domino's Tomato Red */
+              redHover: '#c8102e',
+              blue: '#006491',       /* Domino's Deep Blue */
+              blueDark: '#004f73',
+              yellow: '#ffcc00',     /* Golden Mozzarella Yellow */
+              yellowHover: '#e6b800',
+              dark: '#0f172a'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Poppins', 'sans-serif']
+          },
+          boxShadow: {
+            'domino': '0 8px 30px rgba(0, 100, 145, 0.08)',
+            'card-hover': '0 16px 32px -8px rgba(227, 24, 55, 0.15)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Firebase SDKs (Compat CDN for zero-config single file setup) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    /* Native Dialog containment prevents background page scroll */
+    dialog:modal {
+      overscroll-behavior: contain;
+    }
+    dialog::backdrop {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      overflow: hidden;
+      overscroll-behavior: contain;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .animate-shake {
+      animation: shake 0.3s ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-[#f8fafc] text-slate-800 font-sans antialiased selection:bg-brand-red selection:text-white pb-24 md:pb-0">
+
+  <!-- TOP ANNOUNCEMENT BAR -->
+  <div class="bg-brand-blue text-white text-xs md:text-sm font-medium py-2 px-4 text-center flex items-center justify-between sm:justify-center gap-3">
+    <div class="flex items-center gap-2">
+      <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span>🟢 Open Today: <strong>11:00 AM – 11:00 PM</strong> • Bhandup West, Mumbai</span>
+    </div>
+    
+    <!-- Secondary visible Owner Button for Mobile Bar -->
+    <button 
+      onclick="openPinModal()" 
+      class="text-xs bg-white/10 hover:bg-white/20 text-brand-yellow font-bold px-2.5 py-1 rounded-lg border border-white/20 transition-all sm:hidden"
+    >
+      👑 Owner
+    </button>
+  </div>
+
+  <!-- STICKY TOP NAVBAR -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- LOGO -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="relative w-12 h-12 flex items-center justify-center rounded-xl bg-brand-red text-white shadow-md overflow-hidden">
+          <img 
+            src="./logo.png" 
+            alt="PIZZOO Logo" 
+            class="w-full h-full object-cover"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          >
+          <div style="display: none;" class="w-full h-full items-center justify-center bg-brand-red text-white font-display font-black text-2xl tracking-tighter">
+            P🍕
+          </div>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-display font-black text-2xl md:text-3xl tracking-tight text-brand-red leading-none group-hover:text-brand-blue transition-colors">
+            PIZZOO<span class="text-brand-yellow">.</span>
+          </span>
+          <span class="text-[10px] md:text-xs font-semibold tracking-wider uppercase text-slate-500">
+            Handcrafted Pizzeria • Bhandup (W)
+          </span>
+        </div>
+      </a>
+
+      <!-- DESKTOP NAV -->
+      <nav class="hidden md:flex items-center gap-8 font-medium text-slate-700">
+        <a href="#menu" class="hover:text-brand-red font-semibold text-brand-red transition-colors">Our Menu</a>
+        <a href="#about" class="hover:text-brand-red transition-colors">Shop Info</a>
+        <a href="https://instagram.com/pizzo.in" target="_blank" rel="noopener" class="flex items-center gap-1.5 text-slate-600 hover:text-brand-blue transition-colors">
+          <svg class="w-4 h-4 text-pink-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.13-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          @pizzo.in
+        </a>
+      </nav>
+
+      <!-- HEADER ACTIONS: OWNER LOGIN + CART BUTTON -->
+      <div class="flex items-center gap-2.5 sm:gap-3">
+        
+        <!-- PROMINENT VISIBLE OWNER LOGIN BUTTON -->
+        <button 
+          onclick="openPinModal()" 
+          class="inline-flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-95"
+          title="Owner Menu Management"
+        >
+          <span>👑</span>
+          <span class="hidden sm:inline">Owner Login</span>
+          <span class="sm:hidden">Owner</span>
+        </button>
+
+        <!-- CART BUTTON -->
+        <button 
+          id="openCartBtn"
+          onclick="openCartDrawer()"
+          class="relative inline-flex items-center gap-2 bg-brand-red hover:bg-brand-redHover text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-md transition-all active:scale-95"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          <span class="hidden sm:inline">Cart</span>
+          <span id="navCartCount" class="bg-brand-yellow text-slate-900 font-black text-xs px-2 py-0.5 rounded-full shadow-inner">0</span>
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="relative bg-gradient-to-b from-brand-blue to-brand-blueDark text-white py-12 md:py-16 overflow-hidden">
+    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#ffcc00_1px,transparent_1px)] [background-size:16px_16px]"></div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        
+        <div class="lg:col-span-7 space-y-5 text-center lg:text-left">
+          <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs md:text-sm font-semibold text-brand-yellow border border-white/15">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            100% Pure Veg Hand-Tossed Italian Kitchen
+          </div>
+
+          <h1 class="font-display font-black text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-[1.1]">
+            Hot & Crispy Pizzas in <span class="text-brand-yellow underline decoration-brand-red decoration-4 underline-offset-4">Bhandup West</span>
+          </h1>
+
+          <p class="text-slate-200 text-sm sm:text-base max-w-xl mx-auto lg:mx-0 leading-relaxed">
+            Loaded with 100% Real Mozzarella and stone-baked Italian crusts. Order in seconds directly via <strong>WhatsApp</strong> or <strong>SMS Text</strong>!
+          </p>
+
+          <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2 text-xs sm:text-sm font-semibold">
+            <div class="bg-black/25 px-3 py-1.5 rounded-lg border border-white/10">🧀 100% Real Cheese</div>
+            <div class="bg-black/25 px-3 py-1.5 rounded-lg border border-white/10">⚡ 30-Min Fast Delivery</div>
+            <div class="bg-black/25 px-3 py-1.5 rounded-lg border border-white/10">🟢 100% Pure Veg Kitchen</div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-3">
+            <a 
+              href="#menu" 
+              class="w-full sm:w-auto bg-brand-red hover:bg-brand-redHover text-white px-8 py-3.5 rounded-xl font-display font-bold text-sm shadow-lg shadow-brand-red/30 transition-all text-center"
+            >
+              Order Pizza Now
+            </a>
+            
+            <a 
+              href="https://wa.me/917738009029?text=Hi%20PIZZOO,%20I%20would%20like%20to%20order%20pizza!" 
+              target="_blank" 
+              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3.5 rounded-xl font-display font-bold text-sm shadow-lg transition-all"
+            >
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+              <span>Instant WhatsApp</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Hero Featured Pizza -->
+        <div class="lg:col-span-5 flex justify-center">
+          <div class="w-full max-w-sm bg-white text-slate-800 rounded-3xl p-5 shadow-2xl border-4 border-white/20">
+            <div class="relative h-44 w-full rounded-2xl overflow-hidden bg-amber-50 mb-3">
+              <img 
+                src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=700&q=80" 
+                alt="Cheese Burst Special" 
+                class="w-full h-full object-cover"
+              >
+              <div class="absolute top-2 right-2 bg-brand-red text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full">
+                🔥 Chef's Signature
+              </div>
+            </div>
+            <div class="flex justify-between items-center mb-1">
+              <h3 class="font-display font-bold text-lg text-slate-900">Cheese Burst Special</h3>
+              <span class="font-display font-black text-xl text-brand-red">₹280</span>
+            </div>
+            <p class="text-xs text-slate-500 mb-3">Double-deck molten cheese crust with corn & bell peppers.</p>
+            <button 
+              onclick="addPizzaDirect('cheese-burst-special')" 
+              class="w-full bg-brand-blue hover:bg-brand-blueDark text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow"
+            >
+              + Quick Add to Cart (Regular)
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- STORE DETAILS STRIP -->
+  <div class="bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
+        <div class="border-r border-slate-100 last:border-0">
+          <span class="text-slate-400 font-semibold uppercase block">Location</span>
+          <span class="font-bold text-slate-800">Anita Shopping Center, Bhandup (W)</span>
+        </div>
+        <div class="border-r border-slate-100 last:border-0">
+          <span class="text-slate-400 font-semibold uppercase block">Hours</span>
+          <span class="font-bold text-slate-800">11:00 AM – 11:00 PM (Daily)</span>
+        </div>
+        <div class="border-r border-slate-100 last:border-0">
+          <span class="text-slate-400 font-semibold uppercase block">Cloud Menu Status</span>
+          <span id="syncStatusBadge" class="font-bold text-emerald-600">● Live Synced</span>
+        </div>
+        <div>
+          <span class="text-slate-400 font-semibold uppercase block">Order Helpline</span>
+          <span class="font-bold text-brand-red">+91 7738009029</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENU SECTION -->
+  <main id="menu" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+      <div>
+        <span class="text-xs font-bold text-brand-red uppercase tracking-wider block">100% Pure Veg Hand-Tossed</span>
+        <h2 class="font-display font-black text-2xl sm:text-3xl text-slate-900 tracking-tight">
+          PIZZOO Italian Menu
+        </h2>
+        <p class="text-slate-500 text-xs sm:text-sm mt-0.5">Customize size & add-ons. Sold out items are updated instantly by owner.</p>
+      </div>
+
+      <!-- SEARCH INPUT -->
+      <div class="relative w-full md:w-72">
+        <input 
+          type="text" 
+          id="menuSearchInput" 
+          placeholder="Search Margherita, Paneer..."
+          oninput="handleSearch(this.value)"
+          class="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-brand-blue outline-none shadow-sm"
+        >
+        <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+    </div>
+
+    <!-- CATEGORY FILTER PILLS -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-3 mb-6 no-scrollbar">
+      <button onclick="filterCategory('all', this)" class="category-btn active px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brand-red text-white shadow-sm whitespace-nowrap">
+        All Pizzas
+      </button>
+      <button onclick="filterCategory('Classic', this)" class="category-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white text-slate-600 border border-slate-200 whitespace-nowrap">
+        🍕 Classics
+      </button>
+      <button onclick="filterCategory('Paneer', this)" class="category-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white text-slate-600 border border-slate-200 whitespace-nowrap">
+        🧀 Paneer Specials
+      </button>
+      <button onclick="filterCategory('Loaded', this)" class="category-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white text-slate-600 border border-slate-200 whitespace-nowrap">
+        🥦 Loaded & Feast
+      </button>
+    </div>
+
+    <!-- PIZZA GRID -->
+    <div id="pizzaGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Injected by JavaScript -->
+    </div>
+
+    <!-- EMPTY NOTICE -->
+    <div id="emptySearchNotice" class="hidden text-center py-16">
+      <span class="text-4xl block mb-2">🔍</span>
+      <h3 class="font-bold text-base text-slate-800">No Pizzas Found</h3>
+      <p class="text-xs text-slate-500 mt-1">Try another keyword or reset the filter.</p>
+      <button onclick="clearFilter()" class="mt-3 px-4 py-1.5 bg-brand-blue text-white rounded-xl text-xs font-bold">
+        Show All Pizzas
+      </button>
+    </div>
+
+  </main>
+
+  <!-- STORE DETAILS & FOOTER -->
+  <section id="about" class="bg-white border-t border-slate-200 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+      <div class="space-y-4">
+        <h3 class="font-display font-black text-2xl text-slate-900">Visit Our Bhandup Kitchen</h3>
+        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+          <strong>Store Address:</strong> Near Chhatrapati Shivaji Maharaj Talav, Anita Shopping Center, Gadhav Naka, Bhandup West, Mumbai 400078.
+        </p>
+        <p class="text-xs sm:text-sm text-slate-600">
+          <strong>Hours:</strong> 11:00 AM – 11:00 PM (Monday – Sunday)
+        </p>
+        <p class="text-xs sm:text-sm text-slate-600">
+          <strong>Phone & WhatsApp:</strong> <a href="tel:+917738009029" class="text-brand-blue font-bold">+91 7738009029</a>
+        </p>
+        <div class="flex gap-3 pt-2">
+          <a 
+            href="https://www.google.com/maps/search/?api=1&query=Near+Chhatrapati+Shivaji+Maharaj+Talav+Anita+Shopping+Center+Gadhav+Naka+Bhandup+West+Mumbai+400078" 
+            target="_blank" 
+            class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold"
+          >
+            Google Maps Directions 📍
+          </a>
+          <button 
+            onclick="openPinModal()" 
+            class="bg-amber-100 text-amber-900 border border-amber-300 px-4 py-2 rounded-xl text-xs font-bold"
+          >
+            👑 Owner Menu Manager
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-slate-900 to-brand-blueDark text-white p-6 rounded-3xl shadow-lg">
+        <h4 class="font-display font-bold text-lg text-brand-yellow mb-2">100% Pure Veg Commitment</h4>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          Zero meat products in our entire store. Fresh dough prepared every morning, 100% real dairy mozzarella cheese, and rich Italian tomato herb sauce.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bg-slate-950 text-slate-400 py-6 text-xs text-center border-t border-slate-900">
+    <p>&copy; 2026 PIZZOO Bhandup West • WhatsApp Orders: <strong>+91 7738009029</strong></p>
+  </footer>
+
+  <!-- MOBILE FLOATING CART BAR -->
+  <div id="mobileCartBar" class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 p-3 shadow-2xl z-30 md:hidden flex items-center justify-between transition-transform duration-300 transform translate-y-full">
+    <div class="flex flex-col">
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" id="mobileCartItemCount">0 Items</span>
+      <span class="font-display font-black text-xl text-brand-red" id="mobileCartTotal">₹0</span>
+    </div>
+    <button 
+      onclick="openCartDrawer()" 
+      class="bg-brand-red hover:bg-brand-redHover text-white px-5 py-2.5 rounded-xl font-display font-bold text-xs shadow-md flex items-center gap-1.5 active:scale-95"
+    >
+      <span>View Cart & Bill</span>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+    </button>
+  </div>
+
+  <!-- SLIDE-OUT CART DRAWER -->
+  <dialog 
+    id="cartDrawer" 
+    aria-labelledby="cartDrawerTitle" 
+    closedby="any"
+    class="fixed inset-y-0 right-0 z-50 m-0 ml-auto h-screen max-h-screen w-full max-w-md bg-white shadow-2xl p-0 border-0 flex flex-col overflow-hidden outline-none"
+  >
+    <!-- Header -->
+    <div class="p-4 bg-brand-blue text-white flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🛒</span>
+        <div>
+          <h2 id="cartDrawerTitle" class="font-display font-bold text-base leading-tight">Your Pizza Basket</h2>
+          <span class="text-[11px] text-white/70" id="drawerItemCount">0 items</span>
+        </div>
+      </div>
+      <button type="button" onclick="closeCartDrawer()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white text-lg">✕</button>
+    </div>
+
+    <!-- Items & Form Body -->
+    <div class="flex-1 overflow-y-auto p-4 space-y-5">
+      
+      <!-- Empty State -->
+      <div id="cartEmptyState" class="text-center py-12 space-y-3">
+        <div class="text-4xl">🍕</div>
+        <h3 class="font-bold text-base text-slate-800">Your basket is empty</h3>
+        <p class="text-xs text-slate-400 max-w-xs mx-auto">Choose your favorite pizza, size and add-ons from the menu.</p>
+        <button onclick="closeCartDrawer()" class="px-4 py-2 bg-brand-red text-white text-xs font-bold rounded-xl shadow">
+          Explore Menu
+        </button>
+      </div>
+
+      <!-- Items List -->
+      <div id="cartItemsList" class="space-y-3"></div>
+
+      <!-- Customer Checkout Details -->
+      <div id="customerFormSection" class="hidden pt-3 border-t border-slate-200 space-y-3">
+        <h3 class="font-display font-bold text-xs uppercase tracking-wider text-slate-800">📋 Delivery & Customer Details</h3>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">Your Full Name *</label>
+          <input 
+            type="text" 
+            id="custName" 
+            placeholder="e.g. Rahul Sharma" 
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-blue outline-none"
+          >
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">Order Type *</label>
+          <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+            <label class="flex items-center justify-center p-2 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer has-[:checked]:border-brand-red has-[:checked]:bg-red-50 has-[:checked]:text-brand-red">
+              <input type="radio" name="orderType" value="Home Delivery" checked class="hidden" onchange="updateCartAddressLabel()">
+              <span>🛵 Home Delivery</span>
+            </label>
+            <label class="flex items-center justify-center p-2 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer has-[:checked]:border-brand-red has-[:checked]:bg-red-50 has-[:checked]:text-brand-red">
+              <input type="radio" name="orderType" value="Takeaway" class="hidden" onchange="updateCartAddressLabel()">
+              <span>🥡 Store Takeaway</span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label id="custAddressLabel" class="block text-[11px] font-bold text-slate-600 mb-1">Delivery Address & Landmark *</label>
+          <textarea 
+            id="custAddress" 
+            rows="2" 
+            placeholder="Flat/House No, Building, Landmark in Bhandup West..."
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-brand-blue outline-none resize-none"
+          ></textarea>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer Bill & Dual Checkout Buttons -->
+    <div id="cartFooterSection" class="hidden p-4 bg-slate-50 border-t border-slate-200 shrink-0 space-y-3">
+      <div class="space-y-1 text-xs">
+        <div class="flex justify-between text-slate-600">
+          <span>Subtotal:</span>
+          <span class="font-bold text-slate-800" id="billSubtotal">₹0</span>
+        </div>
+        <div class="flex justify-between text-emerald-600">
+          <span>Delivery / Packaging:</span>
+          <span class="font-bold">FREE (Bhandup West)</span>
+        </div>
+        <div class="flex justify-between pt-1 border-t border-slate-200 text-sm font-bold text-slate-900">
+          <span>Grand Total:</span>
+          <span class="font-display font-black text-xl text-brand-red" id="billGrandTotal">₹0</span>
+        </div>
+      </div>
+
+      <!-- DUAL CHECKOUT BUTTONS: WHATSAPP & SMS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+        <!-- WhatsApp -->
+        <button 
+          type="button" 
+          onclick="checkoutOrder('whatsapp')" 
+          class="w-full bg-[#25D366] hover:bg-[#20ba59] text-slate-950 font-display font-black py-3 px-3 rounded-xl shadow flex items-center justify-center gap-1.5 text-xs transition-all active:scale-95"
+        >
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+          <span>Send on WhatsApp</span>
+        </button>
+
+        <!-- SMS Text -->
+        <button 
+          type="button" 
+          onclick="checkoutOrder('sms')" 
+          class="w-full bg-brand-blue hover:bg-brand-blueDark text-white font-display font-black py-3 px-3 rounded-xl shadow flex items-center justify-center gap-1.5 text-xs transition-all active:scale-95"
+        >
+          <svg class="w-4 h-4 fill-none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          <span>Send via SMS Text</span>
+        </button>
+      </div>
+
+      <button onclick="clearEntireCart()" class="w-full text-center text-[10px] text-slate-400 hover:text-red-600 font-semibold py-0.5">
+        Clear Entire Cart
+      </button>
+    </div>
+  </dialog>
+
+  <!-- 1. OWNER PIN ENTRY MODAL -->
+  <dialog 
+    id="pinModal" 
+    aria-labelledby="pinModalTitle" 
+    closedby="any"
+    class="fixed inset-0 m-auto z-50 w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 border-0 outline-none"
+  >
+    <div class="text-center space-y-3">
+      <div class="w-12 h-12 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-inner">
+        🔒
+      </div>
+      <div>
+        <h3 id="pinModalTitle" class="font-display font-black text-xl text-slate-900">Owner Access Verification</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Enter your 4-digit Owner PIN to manage prices and stock.</p>
+      </div>
+
+      <form onsubmit="handlePinSubmit(event)" class="space-y-4 pt-2">
+        <div>
+          <input 
+            type="password" 
+            id="ownerPinInput" 
+            inputmode="numeric" 
+            pattern="[0-9]*" 
+            maxlength="6"
+            placeholder="••••" 
+            class="w-full text-center text-3xl font-mono tracking-widest py-3 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:border-brand-blue outline-none"
+            required
+            autofocus
+          >
+          <span id="pinErrorMsg" class="hidden text-xs text-brand-red font-bold mt-1.5 block">Incorrect PIN. Please try again.</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button 
+            type="button" 
+            onclick="closePinModal()" 
+            class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="py-2.5 bg-brand-blue hover:bg-brand-blueDark text-white font-bold rounded-xl text-xs shadow"
+          >
+            Unlock Dashboard 🔓
+          </button>
+        </div>
+
+        <p class="text-[10px] text-slate-400">Default PIN: <strong>1234</strong> (Customizable in script)</p>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- 2. OWNER MENU & STOCK MANAGER MODAL -->
+  <dialog 
+    id="ownerDashboardModal" 
+    aria-labelledby="ownerDashTitle" 
+    closedby="any"
+    class="fixed inset-0 m-auto z-50 w-full max-w-3xl max-h-[90vh] bg-white rounded-3xl shadow-2xl p-0 border-0 flex flex-col overflow-hidden outline-none"
+  >
+    <!-- Header -->
+    <div class="p-4 sm:p-5 bg-slate-900 text-white flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-2.5">
+        <span class="text-2xl">👑</span>
+        <div>
+          <h2 id="ownerDashTitle" class="font-display font-bold text-lg leading-tight">PIZZOO Owner Menu Manager</h2>
+          <span class="text-xs text-slate-400">Real-Time Price & Stock Control Panel</span>
+        </div>
+      </div>
+      <button onclick="closeOwnerDashboard()" class="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center text-lg">✕</button>
+    </div>
+
+    <!-- Dashboard Body -->
+    <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+
+      <!-- SECTION A: ADD NEW PIZZA WITH MOBILE PHOTO UPLOAD -->
+      <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="font-display font-bold text-sm text-slate-900 flex items-center gap-2">
+            <span>➕</span> Add New Pizza to Storefront
+          </h3>
+          <span class="text-[11px] text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+            Auto-Compressing JPG
+          </span>
+        </div>
+
+        <form id="addPizzaForm" onsubmit="handleAddNewPizza(event)" class="space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">Pizza Name *</label>
+              <input type="text" id="newPizzaName" placeholder="e.g. Tandoori Paneer Wave" required class="w-full p-2 bg-white border border-slate-300 rounded-xl text-xs focus:ring-1 focus:ring-brand-blue outline-none">
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">Regular Base Price (₹) *</label>
+              <input type="number" id="newPizzaPrice" placeholder="240" min="50" required class="w-full p-2 bg-white border border-slate-300 rounded-xl text-xs focus:ring-1 focus:ring-brand-blue outline-none">
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">Category *</label>
+              <select id="newPizzaCategory" class="w-full p-2 bg-white border border-slate-300 rounded-xl text-xs focus:ring-1 focus:ring-brand-blue outline-none font-semibold">
+                <option value="Classic">Classic Pizza</option>
+                <option value="Paneer">Paneer Special</option>
+                <option value="Loaded">Loaded & Feast</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">Description (Ingredients & Sauces)</label>
+            <input type="text" id="newPizzaDesc" placeholder="e.g. Marinated paneer chunks, bell peppers, mozzarella and spicy red paprika." class="w-full p-2 bg-white border border-slate-300 rounded-xl text-xs focus:ring-1 focus:ring-brand-blue outline-none">
+          </div>
+
+          <!-- Mobile Photo Camera Upload -->
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+            <div class="sm:col-span-8">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">
+                📸 Pizza Photo (Choose file or take picture from phone)
+              </label>
+              <input 
+                type="file" 
+                id="newPizzaPhotoFile" 
+                accept="image/jpeg, image/png, image/webp" 
+                onchange="previewAndCompressPhoto(this)"
+                class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-brand-blue file:text-white hover:file:bg-brand-blueDark cursor-pointer"
+              >
+              <span class="text-[10px] text-slate-400 mt-0.5 block">Anti-Crash: Large photos are automatically compressed on canvas (&lt;600px).</span>
+            </div>
+
+            <!-- Image Preview Box -->
+            <div class="sm:col-span-4 flex items-center gap-3">
+              <div class="w-16 h-16 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden flex items-center justify-center shrink-0">
+                <img id="newPizzaPhotoPreview" src="" class="hidden w-full h-full object-cover">
+                <span id="previewPlaceholder" class="text-xs text-slate-400">Preview</span>
+              </div>
+              <button 
+                type="submit" 
+                class="flex-1 bg-brand-red hover:bg-brand-redHover text-white py-2.5 px-3 rounded-xl font-bold text-xs shadow active:scale-95 transition-all"
+              >
+                Save Pizza 🍕
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- SECTION B: MANAGE CURRENT MENU ITEMS & STOCK TOGGLES -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="font-display font-bold text-sm text-slate-900 flex items-center gap-2">
+            <span>📋</span> Current Menu Items (<span id="ownerTotalCount">0</span>)
+          </h3>
+          <button onclick="resetMenuToDefault()" class="text-[11px] font-bold text-slate-500 hover:text-brand-red underline">
+            Reset to Default 17 Pizzas
+          </button>
+        </div>
+
+        <div id="ownerItemsList" class="space-y-2">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="p-4 bg-slate-100 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500">
+      <span>Database Mode: <strong id="dbModeNotice" class="text-slate-800">Local Cache (Offline)</strong></span>
+      <button onclick="lockOwnerDashboard()" class="text-brand-red font-bold hover:underline">
+        Lock & Sign Out 🔒
+      </button>
+    </div>
+  </dialog>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-20 md:bottom-6 right-4 z-50 pointer-events-none flex flex-col gap-2"></div>
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <script>
+    // =========================================================================
+    // STEP 1: CONFIGURATION & CREDENTIALS
+    // =========================================================================
+    // Default Owner PIN (Change this anytime to your preferred 4-digit code)
+    const OWNER_PIN = "1234";
+
+    // Shop Order Destination Numbers (Format: Country Code + 10 digits without +)
+    const SHOP_WHATSAPP = "917738009029";
+    const SHOP_SMS = "+917738009029";
+
+    // Optional: Firebase Spark Free Cloud Database Credentials
+    // If you paste your keys here, menu changes sync across all customers live!
+    // If left as-is, the app uses localStorage & the 17 default pizzas seamlessly.
+    const firebaseConfig = {
+      apiKey: "AIzaSyCAONYWKGXvEqUlD08k9jYGqSzFR69ftjc",
+      authDomain: "pizzoo-38168.firebaseapp.com",
+      projectId: "pizzoo-38168",
+      storageBucket: "pizzoo-38168.firebasestorage.app",
+      messagingSenderId: "689646069099",
+      appId: "1:689646069099:web:0829b3bfd06fdf85b1582e",
+      measurementId: "G-EG50SC5S8P"
+    };
+
+    // =========================================================================
+    // STEP 2: DEFAULT 17 SPECIAL VEG PIZZAS
+    // =========================================================================
+    const DEFAULT_17_PIZZAS = [
+      { id: "margherita", name: "Margherita", basePrice: 120, category: "Classic", inStock: true, description: "Classic 100% real mozzarella cheese on rich Italian herb tomato sauce & basil.", image: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=600&q=80" },
+      { id: "double-cheese-margherita", name: "Double Cheese Margherita", basePrice: 180, category: "Classic", inStock: true, description: "Loaded with double the gooey melted mozzarella cheese with fresh aromatic herbs.", image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=600&q=80" },
+      { id: "onion-pizza", name: "Onion Pizza", basePrice: 140, category: "Classic", inStock: true, description: "Crunchy sliced red onions seasoned with oregano, paprika & melted mozzarella.", image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80" },
+      { id: "cheese-corn-pizza", name: "Cheese Corn Pizza", basePrice: 150, category: "Classic", inStock: true, description: "Golden sweet American corn kernels showered in golden melted mozzarella cheese.", image: "https://images.unsplash.com/photo-1541745537411-b8046dc6d66c?auto=format&fit=crop&w=600&q=80" },
+      { id: "veg-pizza", name: "Veg Pizza", basePrice: 170, category: "Loaded", inStock: true, description: "Crisp green capsicum, juicy red onions, sweet corn & diced farm-fresh tomatoes.", image: "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?auto=format&fit=crop&w=600&q=80" },
+      { id: "veg-hot-spicy", name: "Veg Hot & Spicy", basePrice: 200, category: "Loaded", inStock: true, description: "Spicy red paprika, pickled jalapeños, crisp capsicum & fiery red chili flakes.", image: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=600&q=80" },
+      { id: "paneer-corn-pizza", name: "Paneer Corn Pizza", basePrice: 190, category: "Paneer", inStock: true, description: "Soft marinated cottage cheese cubes paired with sweet golden American corn.", image: "https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=600&q=80" },
+      { id: "peppy-paneer", name: "Peppy Paneer", basePrice: 210, category: "Paneer", inStock: true, description: "Chunky paneer, crisp capsicum & fiery spicy red paprika with herb mozzarella.", image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80" },
+      { id: "paneer-pizza", name: "Paneer Pizza", basePrice: 220, category: "Paneer", inStock: true, description: "Generous chunks of fresh cottage cheese, capsicum, diced onions & Italian herbs.", image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80" },
+      { id: "paneer-barbeque", name: "Paneer Barbeque", basePrice: 240, category: "Paneer", inStock: true, description: "Smoky BBQ sauce glazed paneer cubes, roasted bell peppers & caramelized onions.", image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=600&q=80" },
+      { id: "paneer-indi-tandoori", name: "Paneer Indi Tandoori", basePrice: 270, category: "Paneer", inStock: true, description: "Desi tandoori marinated tikka paneer, mint mayo drizzle, capsicum & red paprika.", image: "https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=600&q=80" },
+      { id: "veg-supreme", name: "Veg Supreme", basePrice: 250, category: "Loaded", inStock: true, description: "Black olives, sliced mushrooms, sweet corn, crisp capsicum & red onions.", image: "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?auto=format&fit=crop&w=600&q=80" },
+      { id: "extra-veggie", name: "Extra Veggie", basePrice: 250, category: "Loaded", inStock: true, description: "Overloaded with crunchy bell peppers, onions, ripe tomatoes, mushrooms & corn.", image: "https://images.unsplash.com/photo-1541745537411-b8046dc6d66c?auto=format&fit=crop&w=600&q=80" },
+      { id: "farm-house", name: "Farm House", basePrice: 250, category: "Loaded", inStock: true, description: "Fresh button mushrooms, crisp capsicum, ripe tomatoes & crunchy garden onions.", image: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=600&q=80" },
+      { id: "deluxe-paradise", name: "Deluxe Paradise", basePrice: 230, category: "Paneer", inStock: true, description: "Golden corn, black olives, spiced paneer cubes & pickled jalapeños.", image: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=600&q=80" },
+      { id: "mexican-green-wave", name: "Mexican Green Wave", basePrice: 220, category: "Loaded", inStock: true, description: "Mexican herb blend, spicy jalapeños, crunchy capsicum, tomatoes & onions.", image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80" },
+      { id: "cheese-burst-special", name: "Cheese Burst Special", basePrice: 280, category: "Classic", inStock: true, description: "Chef's signature double-deck crust bursting with molten liquid cheese & toppings.", image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80" }
+    ];
+
+    const SIZE_INCREMENTS = { 'Regular': 0, 'Medium': 100, 'Large': 200 };
+    const ADDON_PRICES = { 'extraCheese': 40, 'cheeseBurst': 60 };
+
+    // Application State
+    let currentMenu = [];
+    let cart = [];
+    let isCloudDbActive = false;
+    let firestoreDb = null;
+    let compressedPhotoBase64 = "";
+
+    // =========================================================================
+    // STEP 3: DATABASE INITIALIZATION & SYNC
+    // =========================================================================
+    function initDatabase() {
+      // 1. Check if Firebase credentials have been configured
+      const isConfigValid = firebaseConfig && 
+        firebaseConfig.apiKey && 
+        !firebaseConfig.apiKey.includes("PASTE_");
+
+      if (isConfigValid && typeof firebase !== "undefined") {
+        try {
+          if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+          }
+          firestoreDb = firebase.firestore();
+          isCloudDbActive = true;
+          document.getElementById('syncStatusBadge').innerText = "● Cloud Synced (Firebase)";
+          document.getElementById('dbModeNotice').innerText = "Cloud Firestore (Live Multi-Device)";
+
+          // Real-time listener for multi-device sync
+          firestoreDb.collection("pizzoo_menu").onSnapshot((snapshot) => {
+            if (!snapshot.empty) {
+              const cloudItems = [];
+              snapshot.forEach(doc => cloudItems.push({ id: doc.id, ...doc.data() }));
+              currentMenu = cloudItems;
+            } else {
+              // Seed default pizzas to Firestore if empty
+              DEFAULT_17_PIZZAS.forEach(p => firestoreDb.collection("pizzoo_menu").doc(p.id).set(p));
+              currentMenu = [...DEFAULT_17_PIZZAS];
+            }
+            saveLocalBackup(currentMenu);
+            applyFilters();
+            renderOwnerItems();
+          }, (err) => {
+            console.warn("Firestore listener error, using local fallback:", err);
+            loadLocalMenu();
+          });
+          return;
+        } catch (e) {
+          console.warn("Firebase initialization failed, using local storage:", e);
+        }
+      }
+
+      // 2. Offline / LocalStorage Fallback
+      loadLocalMenu();
+    }
+
+    function loadLocalMenu() {
+      isCloudDbActive = false;
+      document.getElementById('syncStatusBadge').innerText = "● Offline Mode (Ready)";
+      document.getElementById('dbModeNotice').innerText = "LocalStorage Mode (Browser Stored)";
+
+      try {
+        const localSaved = localStorage.getItem("pizzoo_menu");
+        if (localSaved) {
+          currentMenu = JSON.parse(localSaved);
+        } else {
+          currentMenu = [...DEFAULT_17_PIZZAS];
+          saveLocalBackup(currentMenu);
+        }
+      } catch (e) {
+        currentMenu = [...DEFAULT_17_PIZZAS];
+      }
+
+      applyFilters();
+      renderOwnerItems();
+    }
+
+    function saveLocalBackup(items) {
+      try {
+        localStorage.setItem("pizzoo_menu", JSON.stringify(items));
+      } catch(e) {}
+    }
+
+    async function persistMenuUpdate(updatedMenu) {
+      currentMenu = updatedMenu;
+      saveLocalBackup(currentMenu);
+      applyFilters();
+      renderOwnerItems();
+
+      // If Cloud DB is configured, sync to Firestore
+      if (isCloudDbActive && firestoreDb) {
+        try {
+          const batch = firestoreDb.batch();
+          updatedMenu.forEach(item => {
+            const ref = firestoreDb.collection("pizzoo_menu").doc(item.id);
+            batch.set(ref, item);
+          });
+          await batch.commit();
+        } catch(e) {
+          console.error("Cloud persist error:", e);
+        }
+      }
+    }
+
+    // =========================================================================
+    // STEP 4: OWNER PIN & DASHBOARD CONTROLS
+    // =========================================================================
+    const pinDialog = document.getElementById('pinModal');
+    const ownerDashDialog = document.getElementById('ownerDashboardModal');
+
+    function openPinModal() {
+      if (sessionStorage.getItem('pizzoo_owner_logged_in') === 'true') {
+        openOwnerDashboard();
+        return;
+      }
+      document.getElementById('ownerPinInput').value = '';
+      document.getElementById('pinErrorMsg').classList.add('hidden');
+      if (pinDialog && pinDialog.showModal) pinDialog.showModal();
+    }
+
+    function closePinModal() {
+      if (pinDialog && pinDialog.close) pinDialog.close();
+    }
+
+    function handlePinSubmit(e) {
+      e.preventDefault();
+      const enteredPin = document.getElementById('ownerPinInput').value.trim();
+
+      if (enteredPin === OWNER_PIN) {
+        sessionStorage.setItem('pizzoo_owner_logged_in', 'true');
+        closePinModal();
+        openOwnerDashboard();
+        showToast("✓ Welcome Owner! Dashboard Unlocked.");
+      } else {
+        const err = document.getElementById('pinErrorMsg');
+        err.classList.remove('hidden');
+        document.getElementById('ownerPinInput').classList.add('animate-shake');
+        setTimeout(() => document.getElementById('ownerPinInput').classList.remove('animate-shake'), 400);
+      }
+    }
+
+    function openOwnerDashboard() {
+      renderOwnerItems();
+      if (ownerDashDialog && ownerDashDialog.showModal) ownerDashDialog.showModal();
+    }
+
+    function closeOwnerDashboard() {
+      if (ownerDashDialog && ownerDashDialog.close) ownerDashDialog.close();
+    }
+
+    function lockOwnerDashboard() {
+      sessionStorage.removeItem('pizzoo_owner_logged_in');
+      closeOwnerDashboard();
+      showToast("Owner Dashboard Locked 🔒");
+    }
+
+    // =========================================================================
+    // STEP 5: ANTI-CRASH CAMERA PHOTO COMPRESSION (<canvas>)
+    // =========================================================================
+    function previewAndCompressPhoto(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      const previewImg = document.getElementById('newPizzaPhotoPreview');
+      const placeholder = document.getElementById('previewPlaceholder');
+
+      // Use HTML5 Canvas to resize & compress large 5MB+ mobile camera pictures to ~40KB
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const maxWidth = 600;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Export compressed JPEG
+          compressedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+          previewImg.src = compressedPhotoBase64;
+          previewImg.classList.remove('hidden');
+          placeholder.classList.add('hidden');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // =========================================================================
+    // STEP 6: OWNER MENU MANAGEMENT (ADD, TOGGLE STOCK, EDIT, DELETE)
+    // =========================================================================
+    async function handleAddNewPizza(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('newPizzaName').value.trim();
+      const basePrice = Number(document.getElementById('newPizzaPrice').value) || 150;
+      const category = document.getElementById('newPizzaCategory').value;
+      const desc = document.getElementById('newPizzaDesc').value.trim() || "Delicious freshly baked pure vegetarian pizza.";
+      
+      const photo = compressedPhotoBase64 || "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80";
+
+      const newPizza = {
+        id: "pizza-" + Date.now(),
+        name: name,
+        basePrice: basePrice,
+        category: category,
+        description: desc,
+        inStock: true,
+        image: photo
+      };
+
+      const updated = [newPizza, ...currentMenu];
+      await persistMenuUpdate(updated);
+
+      // Reset form
+      document.getElementById('addPizzaForm').reset();
+      compressedPhotoBase64 = "";
+      document.getElementById('newPizzaPhotoPreview').classList.add('hidden');
+      document.getElementById('previewPlaceholder').classList.remove('hidden');
+
+      showToast(`✓ Added "${name}" to store menu!`);
+    }
+
+    async function toggleStockStatus(pizzaId) {
+      const updated = currentMenu.map(p => {
+        if (p.id === pizzaId) {
+          const newStatus = !(p.inStock !== false);
+          showToast(`"${p.name}" is now ${newStatus ? 'IN STOCK 🟢' : 'OUT OF STOCK 🔴'}`);
+          return { ...p, inStock: newStatus };
+        }
+        return p;
+      });
+      await persistMenuUpdate(updated);
+    }
+
+    async function editPizzaPrice(pizzaId) {
+      const pizza = currentMenu.find(p => p.id === pizzaId);
+      if (!pizza) return;
+
+      const newPriceStr = prompt(`Enter new base price (₹) for "${pizza.name}":`, pizza.basePrice);
+      if (newPriceStr === null) return;
+
+      const newPrice = Number(newPriceStr);
+      if (isNaN(newPrice) || newPrice <= 0) {
+        alert("Please enter a valid price in Rupees.");
+        return;
+      }
+
+      const updated = currentMenu.map(p => p.id === pizzaId ? { ...p, basePrice: newPrice } : p);
+      await persistMenuUpdate(updated);
+      showToast(`✓ Updated price for ${pizza.name} to ₹${newPrice}`);
+    }
+
+    async function deletePizzaItem(pizzaId) {
+      const pizza = currentMenu.find(p => p.id === pizzaId);
+      if (!pizza) return;
+
+      if (confirm(`Are you sure you want to delete "${pizza.name}" from your store?`)) {
+        const updated = currentMenu.filter(p => p.id !== pizzaId);
+        await persistMenuUpdate(updated);
+
+        // Delete from Firestore doc if active
+        if (isCloudDbActive && firestoreDb) {
+          try {
+            await firestoreDb.collection("pizzoo_menu").doc(pizzaId).delete();
+          } catch(e) {}
+        }
+        showToast(`Deleted ${pizza.name}`);
+      }
+    }
+
+    async function resetMenuToDefault() {
+      if (confirm("Reset menu to the original 17 PIZZOO veg pizzas?")) {
+        await persistMenuUpdate([...DEFAULT_17_PIZZAS]);
+        showToast("✓ Menu reset to default 17 pizzas!");
+      }
+    }
+
+    function renderOwnerItems() {
+      const list = document.getElementById('ownerItemsList');
+      document.getElementById('ownerTotalCount').innerText = currentMenu.length;
+
+      list.innerHTML = currentMenu.map(p => {
+        const isAvailable = p.inStock !== false;
+        return `
+          <div class="bg-white border ${isAvailable ? 'border-slate-200' : 'border-red-200 bg-red-50/30'} rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+            <div class="flex items-center gap-3">
+              <img src="${p.image}" class="w-12 h-12 rounded-lg object-cover bg-slate-100 shrink-0">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h4 class="font-bold text-xs text-slate-800">${p.name}</h4>
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${isAvailable ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+                    ${isAvailable ? 'IN STOCK' : 'SOLD OUT'}
+                  </span>
+                </div>
+                <div class="text-[11px] text-slate-500">
+                  Base Price: <strong class="text-brand-red">₹${p.basePrice}</strong> • <span class="capitalize">${p.category}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+              <!-- In Stock Toggle -->
+              <button 
+                onclick="toggleStockStatus('${p.id}')" 
+                class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  isAvailable 
+                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white' 
+                    : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
+                }"
+              >
+                ${isAvailable ? '✓ In Stock' : '✕ Sold Out'}
+              </button>
+
+              <button 
+                onclick="editPizzaPrice('${p.id}')" 
+                class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700"
+              >
+                Edit ₹
+              </button>
+
+              <button 
+                onclick="deletePizzaItem('${p.id}')" 
+                class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50"
+                title="Delete Pizza"
+              >
+                🗑️
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // STEP 7: CUSTOMER STOREFRONT & CARD RENDERING
+    // =========================================================================
+    function renderCustomerMenu(items) {
+      const container = document.getElementById('pizzaGrid');
+      const emptyNotice = document.getElementById('emptySearchNotice');
+
+      if (!items || items.length === 0) {
+        container.innerHTML = '';
+        emptyNotice.classList.remove('hidden');
+        return;
+      }
+      emptyNotice.classList.add('hidden');
+
+      container.innerHTML = items.map(pizza => {
+        const isAvailable = pizza.inStock !== false;
+
+        return `
+          <article class="bg-white rounded-3xl p-4 sm:p-5 shadow-domino hover:shadow-card-hover border border-slate-100 flex flex-col justify-between transition-all group ${
+            isAvailable ? '' : 'opacity-70 bg-slate-50/50'
+          }">
+            
+            <div>
+              <!-- Photo with Veg & Out of Stock Badges -->
+              <div class="relative h-44 w-full rounded-2xl overflow-hidden bg-slate-100 mb-3">
+                <img 
+                  src="${pizza.image}" 
+                  alt="${pizza.name}" 
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isAvailable ? '' : 'grayscale'}"
+                  loading="lazy"
+                >
+
+                <!-- 100% Pure Veg Badge -->
+                <div class="absolute top-2.5 left-2.5 bg-white/95 backdrop-blur-sm p-1 rounded-md shadow flex items-center gap-1">
+                  <div class="w-3 h-3 border-2 border-emerald-600 flex items-center justify-center p-0.5">
+                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-600"></div>
+                  </div>
+                  <span class="text-[9px] font-bold text-emerald-800 uppercase pr-0.5">Pure Veg</span>
+                </div>
+
+                <!-- Sold Out Banner -->
+                ${!isAvailable ? `
+                  <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center">
+                    <span class="bg-brand-red text-white font-display font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider shadow-lg">
+                      Out of Stock
+                    </span>
+                  </div>
+                ` : ''}
+              </div>
+
+              <!-- Name & Description -->
+              <div class="mb-3">
+                <h3 class="font-display font-bold text-lg text-slate-900 group-hover:text-brand-blue transition-colors">
+                  ${pizza.name}
+                </h3>
+                <p class="text-xs text-slate-500 mt-1 leading-relaxed line-clamp-2">
+                  ${pizza.description}
+                </p>
+              </div>
+
+              <!-- Size Selector -->
+              <div class="mt-3 pt-3 border-t border-slate-100 ${isAvailable ? '' : 'pointer-events-none opacity-50'}">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Crust Size:</span>
+                <div class="grid grid-cols-3 gap-1.5 text-xs font-semibold">
+                  <label class="cursor-pointer">
+                    <input type="radio" name="size_${pizza.id}" value="Regular" checked class="hidden peer" onchange="updateCardPrice('${pizza.id}')">
+                    <div class="text-center py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 peer-checked:bg-brand-blue peer-checked:text-white peer-checked:border-brand-blue peer-checked:font-bold transition-all">
+                      Regular
+                    </div>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="size_${pizza.id}" value="Medium" class="hidden peer" onchange="updateCardPrice('${pizza.id}')">
+                    <div class="text-center py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 peer-checked:bg-brand-blue peer-checked:text-white peer-checked:border-brand-blue peer-checked:font-bold transition-all">
+                      Medium <span class="text-[9px] block opacity-85">+₹100</span>
+                    </div>
+                  </label>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="size_${pizza.id}" value="Large" class="hidden peer" onchange="updateCardPrice('${pizza.id}')">
+                    <div class="text-center py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 peer-checked:bg-brand-blue peer-checked:text-white peer-checked:border-brand-blue peer-checked:font-bold transition-all">
+                      Large <span class="text-[9px] block opacity-85">+₹200</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Add-ons -->
+              <div class="mt-2.5 space-y-1 bg-slate-50 p-2 rounded-xl border border-slate-100 text-[11px] text-slate-700 ${isAvailable ? '' : 'pointer-events-none opacity-50'}">
+                <label class="flex items-center justify-between cursor-pointer">
+                  <span class="flex items-center gap-1.5">
+                    <input type="checkbox" id="extraCheese_${pizza.id}" class="rounded text-brand-red" onchange="updateCardPrice('${pizza.id}')">
+                    <span>🧀 Extra Cheese</span>
+                  </span>
+                  <span class="font-bold text-slate-400">+₹40</span>
+                </label>
+                <label class="flex items-center justify-between cursor-pointer">
+                  <span class="flex items-center gap-1.5">
+                    <input type="checkbox" id="cheeseBurst_${pizza.id}" class="rounded text-brand-red" onchange="updateCardPrice('${pizza.id}')">
+                    <span>✨ Cheese Burst Crust</span>
+                  </span>
+                  <span class="font-bold text-slate-400">+₹60</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Card Bottom Bar -->
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <div>
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Price</span>
+                <span id="price_${pizza.id}" class="font-display font-black text-xl text-brand-red">
+                  ₹${pizza.basePrice}
+                </span>
+              </div>
+
+              ${isAvailable ? `
+                <button 
+                  onclick="handleAddPizzaToCart('${pizza.id}')" 
+                  class="bg-brand-red hover:bg-brand-redHover text-white px-4 py-2 rounded-xl font-display font-bold text-xs shadow transition-all active:scale-95"
+                >
+                  + Add to Cart
+                </button>
+              ` : `
+                <button disabled class="bg-slate-200 text-slate-400 px-3 py-2 rounded-xl font-bold text-xs cursor-not-allowed">
+                  Sold Out
+                </button>
+              `}
+            </div>
+
+          </article>
+        `;
+      }).join('');
+    }
+
+    function updateCardPrice(pizzaId) {
+      const pizza = currentMenu.find(p => p.id === pizzaId);
+      if (!pizza) return;
+
+      const sizeElem = document.querySelector(`input[name="size_${pizzaId}"]:checked`);
+      const size = sizeElem ? sizeElem.value : 'Regular';
+      const sizeAdd = SIZE_INCREMENTS[size] || 0;
+
+      const extraCheese = document.getElementById(`extraCheese_${pizzaId}`)?.checked;
+      const cheeseBurst = document.getElementById(`cheeseBurst_${pizzaId}`)?.checked;
+
+      let total = pizza.basePrice + sizeAdd;
+      if (extraCheese) total += ADDON_PRICES.extraCheese;
+      if (cheeseBurst) total += ADDON_PRICES.cheeseBurst;
+
+      const priceElem = document.getElementById(`price_${pizzaId}`);
+      if (priceElem) priceElem.innerText = `₹${total}`;
+    }
+
+    function handleAddPizzaToCart(pizzaId) {
+      const pizza = currentMenu.find(p => p.id === pizzaId);
+      if (!pizza || pizza.inStock === false) return;
+
+      const sizeElem = document.querySelector(`input[name="size_${pizzaId}"]:checked`);
+      const size = sizeElem ? sizeElem.value : 'Regular';
+      const sizeAdd = SIZE_INCREMENTS[size] || 0;
+
+      const hasExtraCheese = document.getElementById(`extraCheese_${pizzaId}`)?.checked;
+      const hasCheeseBurst = document.getElementById(`cheeseBurst_${pizzaId}`)?.checked;
+
+      let unitPrice = pizza.basePrice + sizeAdd;
+      const addOns = [];
+      if (hasExtraCheese) {
+        unitPrice += ADDON_PRICES.extraCheese;
+        addOns.push('Extra Cheese (+₹40)');
+      }
+      if (hasCheeseBurst) {
+        unitPrice += ADDON_PRICES.cheeseBurst;
+        addOns.push('Cheese Burst Crust (+₹60)');
+      }
+
+      const itemKey = `${pizza.id}__${size}__${hasExtraCheese ? '1' : '0'}__${hasCheeseBurst ? '1' : '0'}`;
+
+      const existingIndex = cart.findIndex(it => it.key === itemKey);
+      if (existingIndex > -1) {
+        cart[existingIndex].qty += 1;
+      } else {
+        cart.push({
+          key: itemKey,
+          id: pizza.id,
+          name: pizza.name,
+          size: size,
+          addOns: addOns,
+          unitPrice: unitPrice,
+          qty: 1
+        });
+      }
+
+      updateCartUI();
+      showToast(`✓ Added ${pizza.name} (${size}) to basket!`);
+    }
+
+    function addPizzaDirect(pizzaId) {
+      const pizza = currentMenu.find(p => p.id === pizzaId);
+      if (!pizza) return;
+      handleAddPizzaToCart(pizza.id);
+      openCartDrawer();
+    }
+
+    // =========================================================================
+    // STEP 8: CART DRAWER & DUAL CHECKOUT (WHATSAPP & SMS)
+    // =========================================================================
+    const cartDialog = document.getElementById('cartDrawer');
+
+    function openCartDrawer() {
+      updateCartUI();
+      if (cartDialog && cartDialog.showModal) cartDialog.showModal();
+    }
+
+    function closeCartDrawer() {
+      if (cartDialog && cartDialog.close) cartDialog.close();
+    }
+
+    function updateCartUI() {
+      const totalCount = cart.reduce((sum, it) => sum + it.qty, 0);
+      const subtotal = cart.reduce((sum, it) => sum + (it.unitPrice * it.qty), 0);
+
+      document.getElementById('navCartCount').innerText = totalCount;
+      document.getElementById('drawerItemCount').innerText = `${totalCount} item${totalCount === 1 ? '' : 's'}`;
+
+      const mobileBar = document.getElementById('mobileCartBar');
+      if (totalCount > 0) {
+        mobileBar.classList.remove('translate-y-full');
+        document.getElementById('mobileCartItemCount').innerText = `${totalCount} Item${totalCount === 1 ? '' : 's'}`;
+        document.getElementById('mobileCartTotal').innerText = `₹${subtotal}`;
+      } else {
+        mobileBar.classList.add('translate-y-full');
+      }
+
+      const emptyState = document.getElementById('cartEmptyState');
+      const itemsList = document.getElementById('cartItemsList');
+      const formSection = document.getElementById('customerFormSection');
+      const footerSection = document.getElementById('cartFooterSection');
+
+      if (cart.length === 0) {
+        emptyState.classList.remove('hidden');
+        itemsList.innerHTML = '';
+        formSection.classList.add('hidden');
+        footerSection.classList.add('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      formSection.classList.remove('hidden');
+      footerSection.classList.remove('hidden');
+
+      itemsList.innerHTML = cart.map(item => `
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3 shadow-sm">
+          <div class="flex-1 min-w-0">
+            <h4 class="font-bold text-xs text-slate-800 truncate">${item.name}</h4>
+            <div class="text-[10px] text-slate-500">
+              <span class="font-semibold text-brand-blue">${item.size}</span>
+              ${item.addOns.length ? `• ${item.addOns.join(', ')}` : ''}
+            </div>
+            <div class="font-display font-black text-xs text-brand-red mt-1">
+              ₹${item.unitPrice * item.qty} <span class="text-[9px] text-slate-400 font-normal">(₹${item.unitPrice} each)</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="changeQty('${item.key}', -1)" class="w-6 h-6 rounded bg-white border border-slate-300 font-bold text-xs text-slate-700">-</button>
+            <span class="font-bold text-xs text-slate-800 w-4 text-center">${item.qty}</span>
+            <button onclick="changeQty('${item.key}', 1)" class="w-6 h-6 rounded bg-brand-blue text-white font-bold text-xs">+</button>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('billSubtotal').innerText = `₹${subtotal}`;
+      document.getElementById('billGrandTotal').innerText = `₹${subtotal}`;
+    }
+
+    function changeQty(key, delta) {
+      const item = cart.find(it => it.key === key);
+      if (!item) return;
+      item.qty += delta;
+      if (item.qty <= 0) {
+        cart = cart.filter(it => it.key !== key);
+      }
+      updateCartUI();
+    }
+
+    function clearEntireCart() {
+      if (confirm("Clear all items from your basket?")) {
+        cart = [];
+        updateCartUI();
+      }
+    }
+
+    function updateCartAddressLabel() {
+      const type = document.querySelector('input[name="orderType"]:checked')?.value || 'Home Delivery';
+      const label = document.getElementById('custAddressLabel');
+      const input = document.getElementById('custAddress');
+
+      if (type === 'Home Delivery') {
+        label.innerText = 'Delivery Address & Landmark in Bhandup West *';
+        input.placeholder = 'Flat/House No, Building, Landmark, Bhandup (W)...';
+      } else {
+        label.innerText = 'Store Takeaway Notes';
+        input.placeholder = 'e.g. Will pick up from Anita Shopping Center in 20 mins';
+      }
+    }
+
+    // DUAL CHECKOUT PROCESSOR (WHATSAPP & SMS)
+    function checkoutOrder(channel) {
+      if (cart.length === 0) {
+        showToast("Your cart is empty! Please add a pizza first.", "error");
+        return;
+      }
+
+      const custName = document.getElementById('custName').value.trim();
+      const orderType = document.querySelector('input[name="orderType"]:checked')?.value || 'Home Delivery';
+      const custAddress = document.getElementById('custAddress').value.trim();
+
+      if (!custName) {
+        alert("Please enter your name.");
+        document.getElementById('custName').focus();
+        return;
+      }
+
+      if (orderType === 'Home Delivery' && !custAddress) {
+        alert("Please enter your delivery address in Bhandup West.");
+        document.getElementById('custAddress').focus();
+        return;
+      }
+
+      const finalAddress = custAddress || 'Store Pickup (Anita Shopping Center, Bhandup West)';
+
+      // Build Itemized Bill Text
+      let orderItemsText = '';
+      cart.forEach((item, index) => {
+        const itemTotal = item.unitPrice * item.qty;
+        const addOnsText = item.addOns.length > 0 ? item.addOns.join(', ') : 'None';
+        orderItemsText += `${index + 1}. ${item.name} (${item.size}) x${item.qty} - ₹${itemTotal}\n   _Add-ons: ${addOnsText}_\n`;
+      });
+
+      const grandTotal = cart.reduce((sum, it) => sum + (it.unitPrice * it.qty), 0);
+
+      // EXACT BILL FORMAT
+      const message = 
+`🍕 *NEW ORDER - PIZZOO* 🍕
+--------------------------------
+*Customer:* ${custName}
+*Type:* ${orderType}
+*Address:* ${finalAddress}
+--------------------------------
+*ORDER DETAILS:*
+${orderItemsText.trimEnd()}
+--------------------------------
+*GRAND TOTAL: ₹${grandTotal}*
+*Payment Mode:* Cash on Delivery / UPI on Delivery
+--------------------------------
+Please confirm my order!`;
+
+      if (channel === 'whatsapp') {
+        const waUrl = `https://wa.me/${SHOP_WHATSAPP}?text=${encodeURIComponent(message)}`;
+        window.open(waUrl, '_blank');
+      } else if (channel === 'sms') {
+        const smsUrl = `sms:${SHOP_SMS}?body=${encodeURIComponent(message)}`;
+        window.location.href = smsUrl;
+      }
+
+      // Reset cart and close drawer
+      cart = [];
+      updateCartUI();
+      closeCartDrawer();
+      showToast(`Bill sent via ${channel.toUpperCase()}! 🍕`);
+    }
+
+    // =========================================================================
+    // STEP 9: SEARCH, FILTER & TOASTS
+    // =========================================================================
+    let currentCategory = 'all';
+    let currentSearchTerm = '';
+
+    function filterCategory(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('.category-btn').forEach(b => {
+        b.classList.remove('active', 'bg-brand-red', 'text-white');
+        b.classList.add('bg-white', 'text-slate-600');
+      });
+      btn.classList.add('active', 'bg-brand-red', 'text-white');
+      btn.classList.remove('bg-white', 'text-slate-600');
+      applyFilters();
+    }
+
+    function handleSearch(term) {
+      currentSearchTerm = term.trim().toLowerCase();
+      applyFilters();
+    }
+
+    function clearFilter() {
+      document.getElementById('menuSearchInput').value = '';
+      currentSearchTerm = '';
+      currentCategory = 'all';
+      const allBtn = document.querySelector('.category-btn');
+      if (allBtn) filterCategory('all', allBtn);
+    }
+
+    function applyFilters() {
+      let filtered = currentMenu;
+
+      if (currentCategory !== 'all') {
+        filtered = filtered.filter(p => (p.category || '').toLowerCase() === currentCategory.toLowerCase());
+      }
+
+      if (currentSearchTerm) {
+        filtered = filtered.filter(p => 
+          p.name.toLowerCase().includes(currentSearchTerm) || 
+          p.description.toLowerCase().includes(currentSearchTerm)
+        );
+      }
+
+      renderCustomerMenu(filtered);
+    }
+
+    function showToast(msg, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow-xl transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto flex items-center gap-2 ${
+        type === 'error' ? 'bg-red-600' : 'bg-slate-900'
+      }`;
+      toast.innerHTML = msg;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+    // Boot App
+    document.addEventListener('DOMContentLoaded', () => {
+      initDatabase();
+    });
+  </script>
+</body>
+</html>
