@@ -34,7 +34,7 @@ export const ContactSection = () => {
                     Chhatrapati Shivaji Maharaj Talav, Anita Shopping Center, Jangal Mangal Rd, near Monginis Cake Shop, Gadhav Naka, Sarvodaya Nagar, Bhandup West, Mumbai, Maharashtra 400078
                   </p>
                   <a 
-                    href="https://maps.app.goo.gl/QcoW7vDdGgy3Ko7b6?g_st=ic" 
+                    href="https://maps.app.goo.gl/x4eWdtBibDuSYwNN7" 
                     target="_blank" 
                     rel="noreferrer"
                     className="inline-flex items-center gap-1.5 mt-2.5 px-3.5 py-1.5 rounded-lg bg-trattoria-gold/15 hover:bg-trattoria-gold/25 border border-trattoria-gold/40 text-trattoria-gold text-xs font-bold transition-all"
@@ -93,7 +93,7 @@ export const ContactSection = () => {
                     <span>Chat on WhatsApp (917738009029)</span>
                   </a>
                   <a 
-                    href="https://maps.app.goo.gl/QcoW7vDdGgy3Ko7b6?g_st=ic" 
+                    href="https://maps.app.goo.gl/x4eWdtBibDuSYwNN7" 
                     target="_blank" 
                     rel="noreferrer" 
                     className="text-sm text-amber-300 font-semibold hover:underline flex items-center gap-1.5"
@@ -107,13 +107,22 @@ export const ContactSection = () => {
           </div>
 
           {/* Map Embed */}
-          <div className="rounded-2xl overflow-hidden border border-trattoria-gold/30 shadow-2xl bg-black">
+          <div className="relative rounded-2xl overflow-hidden border border-trattoria-gold/30 shadow-2xl bg-black">
+            <a
+              href="https://maps.app.goo.gl/x4eWdtBibDuSYwNN7"
+              target="_blank"
+              rel="noreferrer"
+              className="absolute top-3 left-3 z-10 bg-white/95 hover:bg-white text-stone-900 px-3 py-1.5 rounded-lg font-sans text-xs font-bold shadow-md flex items-center gap-1.5 transition-all hover:scale-105"
+            >
+              <Navigation className="w-3.5 h-3.5 text-trattoria-red" />
+              <span>Open in Maps</span>
+            </a>
             <iframe 
-              src="https://www.google.com/maps?q=Anita+Shopping+Center,+Jangal+Mangal+Rd,+Gadhav+Naka,+Bhandup+West,+Mumbai+400078&output=embed" 
+              src="https://www.google.com/maps?q=Pizzoo+Pizza,+Anita+Shopping+Center,+Jangal+Mangal+Rd,+Bhandup+West,+Mumbai+400078&output=embed" 
               className="w-full h-[350px] rounded-2xl border-0"
               allowFullScreen="" 
               loading="lazy" 
-              title="Pizzoo Pizzeria Location Map"
+              title="Pizzoo Pizza Location Map"
             />
           </div>
         </div>
