@@ -30,7 +30,7 @@ export const ContactSection = () => {
                 <div>
                   <span className="font-sans text-[10px] tracking-widest text-trattoria-gold uppercase block">ADDRESS</span>
                   <p className="text-sm text-white/80 font-body mt-0.5">
-                    Bhandup West, Mumbai — 400078, Maharashtra, India
+                    Chattrapati Shivaji Maharaj Talav, Anita Shopping Center, Jangal Mangal Rd, near monjinis Cake Shop, Gadhav Naka, Sarvodaya Nagar, Bhandup West, Mumbai, Maharashtra 400078
                   </p>
                 </div>
               </div>
