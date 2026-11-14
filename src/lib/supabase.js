@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const DEFAULT_URL = 'https://xwjcwrytplyjygfgcrwa.supabase.co';
-const DEFAULT_KEY = 'sb_publishable_w7soVC3BzCEAS-F01t7kHQ_37jsVHg0';
+const DEFAULT_URL = 'https://xwjcwrytpjyjygfgcrwa.supabase.co';
+const DEFAULT_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3amN3cnl0cGp5anlnZmdjcndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTQxMTUsImV4cCI6MjEwMjA5MDExNX0.MigIMlsGarNOg_gdImhIcdmKKRt2_Z5SGntkdkSVa7s';
 
 const getEnvOrStorage = (envKey, storageKey, fallback = '') => {
   const envVal = import.meta.env[envKey];
