@@ -90,16 +90,7 @@ export const Navbar = () => {
         {/* Actions */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           {/* Prominent Manage / Add Menu Button (Opens PIN Modal) */}
-          <button
-            type="button"
-            onClick={handleOpenPinModal}
-            className="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-trattoria-gold border border-trattoria-gold/40 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full font-sans text-xs tracking-wider uppercase font-bold transition-all shadow-sm hover:scale-105"
-            title="Add / Manage Menu"
-          >
-            <span>👑</span>
-            <span className="hidden sm:inline">Add / Manage Menu</span>
-            <span className="sm:hidden">Add Menu</span>
-          </button>
+          
 
           {/* Call-to-Order Telephone Link */}
           <a

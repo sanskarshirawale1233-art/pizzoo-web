@@ -71,6 +71,9 @@ export const ContactSection = () => {
                   <a href="https://wa.me/917738009029" target="_blank" rel="noreferrer" className="text-sm text-emerald-300 font-bold hover:underline">
                     Chat on WhatsApp (917738009029)
                   </a>
+                  <a href="https://search.google.com/local/writereview?placeid=PLACE_ID" target="_blank" rel="noreferrer" className="text-sm text-emerald-300 font-bold hover:underline">
+                    Leave a Google Review
+                  </a>
                 </div>
               </div>
             </div>
@@ -79,7 +82,7 @@ export const ContactSection = () => {
           {/* Map Embed */}
           <div className="rounded-3xl overflow-hidden border border-trattoria-gold/20 shadow-2xl h-[360px]">
             <iframe 
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15073.29609905782!2d72.93!3d19.15!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7b9aec3e04db1%3A0xb12697def2d70deb!2sBhandup%20West%2C%20Mumbai%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1700000000000" 
+              src="https://maps.app.goo.gl/QcoW7vDdGgy3Ko7b6?g_st=ic" 
               className="w-full h-full border-0 filter invert opacity-90"
               allowFullScreen="" 
               loading="lazy" 
