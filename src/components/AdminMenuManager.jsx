@@ -325,7 +325,7 @@ export const AdminMenuManager = () => {
       </div>
 
       {/* Menu Cards Grid */}
-      {loading ? (
+      {loading && filteredItems.length === 0 ? (
         <div className="py-20 text-center text-stone-400 font-sans text-xs">
           Loading database menu items...
         </div>

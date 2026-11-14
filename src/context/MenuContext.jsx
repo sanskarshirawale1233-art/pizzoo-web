@@ -27,10 +27,18 @@ const normalizeMenuItem = (item) => {
   return {
     ...item,
     id: String(item.id),
+    name: item.name || '',
+    italian_title: item.italian_title || '',
+    category: item.category || 'Veg Pizzas / Classic Veg',
+    price_reg: Number(item.price_reg) || 0,
+    price_med: Number(item.price_med) || 0,
+    price_lrg: Number(item.price_lrg) || 0,
+    description: item.description || '',
+    image_url: item.image_url || 'https://images.unsplash.com/photo-1548365328-8c6db3220e4c?w=600',
     ingredients: Array.isArray(ingredients) ? ingredients : [],
     tags: Array.isArray(tags) ? tags : [],
-    is_veg: item.is_veg === true || item.is_veg === 1 || item.is_veg === '1',
-    is_available: item.is_available === true || item.is_available === 1 || item.is_available === '1' || item.is_available === undefined
+    is_veg: item.is_veg === true || item.is_veg === 1 || item.is_veg === '1' || item.is_veg === 'true',
+    is_available: item.is_available === true || item.is_available === 1 || item.is_available === '1' || item.is_available === 'true' || item.is_available === undefined
   };
 };
 
@@ -97,12 +105,12 @@ export const MenuProvider = ({ children }) => {
             setMenuItems(normalized);
             saveToLocal(normalized);
             setError(null);
+            setLoading(false);
             return;
           } else {
-            // First time setup on empty Supabase table: seed current items
+            // First time setup on empty Supabase table: seed initial pizzas
             try {
-              const current = (menuItems && menuItems.length > 0) ? menuItems : INITIAL_MENU_ITEMS;
-              await sb.from('menu_items').upsert(current.map(prepareForSupabase));
+              await sb.from('menu_items').upsert(INITIAL_MENU_ITEMS.map(prepareForSupabase));
             } catch (seedErr) {
               console.warn('Auto-seed error:', seedErr);
             }
@@ -118,7 +126,9 @@ export const MenuProvider = ({ children }) => {
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            setMenuItems(parsed.map(normalizeMenuItem));
+            const normalized = parsed.map(normalizeMenuItem);
+            setMenuItems(normalized);
+            setLoading(false);
             return;
           }
         }
@@ -132,7 +142,7 @@ export const MenuProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [menuItems]);
+  }, []);
 
   useEffect(() => {
     fetchMenu();
