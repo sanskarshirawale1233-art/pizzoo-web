@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Trash2, Phone, ShoppingBag, ArrowLeft, User, AlertCircle, Utensils, MapPin, Bike, CheckCircle2 } from 'lucide-react';
+import { X, Trash2, ShoppingBag, ArrowLeft, User, Phone, MapPin, Bike, Utensils, MessageSquare, AlertCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 export const CartSidebar = () => {
@@ -21,6 +21,10 @@ export const CartSidebar = () => {
   const [address, setAddress] = useState('');
   const [customerNotes, setCustomerNotes] = useState('');
   const [validationError, setValidationError] = useState('');
+
+  // WhatsApp & SMS Order Number
+  const ORDER_PHONE = '919988992210';
+  const FORMATTED_PHONE = '+91 9988992210';
 
   // Reset step to BASKET whenever cart opens
   useEffect(() => {
@@ -49,10 +53,8 @@ export const CartSidebar = () => {
     return true;
   };
 
-  // DIRECT WHATSAPP ORDER HANDLER (Strictly No KDS / No Preparing Screen)
-  const handleWhatsAppCheckout = () => {
-    if (!validateDetails()) return;
-
+  // Build formatted order text string for WhatsApp and SMS
+  const compileOrderMessage = () => {
     const readableType = 
       orderType === 'HOME_DELIVERY' ? 'Home Delivery' :
       orderType === 'TAKEOUT' ? 'Takeaway' : 'Dine-in';
@@ -63,19 +65,14 @@ export const CartSidebar = () => {
         : 'Dine-in at Store'
     );
 
-    // Format itemized order details
     const orderItemsText = cart.map((item, index) => {
       const itemTotal = (item.price || 0) * (item.quantity || 1);
       const sizeText = item.size ? ` (${item.size})` : '';
-      const crustText = item.crust ? ` [Crust: ${item.crust}]` : '';
+      const crustText = item.crust ? ` [${item.crust}]` : '';
       
       const addOnsList = [];
-      if (item.toppings && item.toppings.length > 0) {
-        addOnsList.push(...item.toppings);
-      }
-      if (item.addOns && item.addOns.length > 0) {
-        addOnsList.push(...item.addOns);
-      }
+      if (item.toppings && item.toppings.length > 0) addOnsList.push(...item.toppings);
+      if (item.addOns && item.addOns.length > 0) addOnsList.push(...item.addOns);
       const addOnsFormatted = addOnsList.length > 0 ? addOnsList.join(', ') : 'None';
 
       return `${index + 1}. ${item.name}${sizeText}${crustText} x${item.quantity || 1} - ₹${itemTotal}\n   _Add-ons: ${addOnsFormatted}_`;
@@ -83,9 +80,7 @@ export const CartSidebar = () => {
 
     const notesLine = customerNotes.trim() ? `\n*Special Instructions:* ${customerNotes.trim()}` : '';
 
-    // EXACT REQUIRED WHATSAPP BILL FORMAT
-    const message = 
-`🍕 *NEW ORDER - PIZZOO* 🍕
+    return `🍕 *NEW ORDER - PIZZOO* 🍕
 --------------------------------
 *Customer:* ${customerName.trim()}
 *Phone:* ${phone.trim()}
@@ -99,26 +94,46 @@ ${orderItemsText}
 *Payment Mode:* Cash on Delivery / UPI on Delivery
 --------------------------------
 Please confirm my order!`;
+  };
 
-    // PIZZOO WhatsApp Number
-    const shopWhatsAppNumber = '917738009029';
-    const whatsappUrl = `https://wa.me/${shopWhatsAppNumber}?text=${encodeURIComponent(message)}`;
+  // WhatsApp Checkout Handler
+  const handleWhatsAppCheckout = () => {
+    if (!validateDetails()) return;
 
-    // Open WhatsApp directly
+    const message = compileOrderMessage();
+    const whatsappUrl = `https://wa.me/${ORDER_PHONE}?text=${encodeURIComponent(message)}`;
+
     window.open(whatsappUrl, '_blank');
 
-    // Clean up cart & close drawer without triggering KDS
     clearCart();
     setIsCartOpen(false);
 
     if (setToastNotification) {
-      setToastNotification('Order sent to WhatsApp (+91 7738009029)! We will confirm shortly 🍕');
+      setToastNotification(`Order sent to WhatsApp (${FORMATTED_PHONE})! We will confirm shortly 🍕`);
+      setTimeout(() => setToastNotification(null), 4000);
+    }
+  };
+
+  // Text Message (SMS) Checkout Handler
+  const handleSmsCheckout = () => {
+    if (!validateDetails()) return;
+
+    const message = compileOrderMessage();
+    const smsUrl = `sms:+${ORDER_PHONE}?body=${encodeURIComponent(message)}`;
+
+    window.open(smsUrl, '_blank');
+
+    clearCart();
+    setIsCartOpen(false);
+
+    if (setToastNotification) {
+      setToastNotification(`Order sent via SMS (${FORMATTED_PHONE})! We will confirm shortly 🍕`);
       setTimeout(() => setToastNotification(null), 4000);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[1500] bg-black/70 backdrop-blur-sm flex justify-end animate-fadeIn">
+    <div className="fixed inset-0 z-[1500] bg-black/75 backdrop-blur-sm flex justify-end animate-fadeIn">
       <div className="w-full max-w-md bg-[#0F0A05] border-l border-trattoria-gold/20 h-full flex flex-col justify-between shadow-2xl text-white">
         
         {/* Header */}
@@ -138,7 +153,7 @@ Please confirm my order!`;
                 {step === 'BASKET' ? 'Your Basket' : 'WhatsApp Checkout'}
               </h3>
               <span className="font-sans text-[10px] tracking-widest uppercase text-trattoria-gold block">
-                {step === 'BASKET' ? 'Review Purchased Pizzas' : 'Direct WhatsApp Order to +91 7738009029'}
+                {step === 'BASKET' ? 'Review Selected Pizzas' : `Direct Order to ${FORMATTED_PHONE}`}
               </span>
             </div>
           </div>
@@ -159,7 +174,7 @@ Please confirm my order!`;
                 <div className="text-center py-20 text-white/40 font-sans uppercase tracking-widest text-xs space-y-2">
                   <span className="block text-5xl mb-3">🍕</span>
                   <span>Your basket is empty</span>
-                  <p className="text-[10px] text-white/30 lowercase">Select items from the menu to start your order</p>
+                  <p className="text-[10px] text-white/30 lowercase">Select pizzas from the menu to start your order</p>
                 </div>
               ) : (
                 cart.map((item) => (
@@ -307,7 +322,7 @@ Please confirm my order!`;
 
                 {/* Phone */}
                 <div>
-                  <label className="text-[10px] text-white/70 font-bold block mb-1">WhatsApp / Phone Number *</label>
+                  <label className="text-[10px] text-white/70 font-bold block mb-1">Your WhatsApp / Mobile Number *</label>
                   <div className="relative">
                     <input
                       type="tel"
@@ -376,26 +391,37 @@ Please confirm my order!`;
               )}
             </div>
 
-            {/* Step 2 Footer Action: DIRECT WHATSAPP CHECKOUT */}
-            <div className="pt-4 border-t border-white/10 bg-[#0A0500] space-y-3">
-              <div className="flex justify-between items-center">
+            {/* Step 2 Footer Action: DUAL WHATSAPP & SMS CHECKOUT */}
+            <div className="pt-4 border-t border-white/10 bg-[#0A0500] space-y-2.5">
+              <div className="flex justify-between items-center mb-1">
                 <span className="font-sans text-xs uppercase tracking-widest text-white/60">Grand Total</span>
                 <span className="font-serif text-3xl font-black text-trattoria-gold">₹{subtotal}</span>
               </div>
 
+              {/* 1. Primary WhatsApp Checkout Button */}
               <button
                 type="button"
                 onClick={handleWhatsAppCheckout}
-                className="w-full bg-[#25D366] hover:bg-[#20ba59] text-slate-950 py-4 rounded-xl flex items-center justify-center gap-2.5 shadow-xl shadow-emerald-950/50 transition-all text-sm font-black uppercase tracking-wider active:scale-98"
+                className="w-full bg-[#25D366] hover:bg-[#20ba59] text-slate-950 py-3.5 rounded-xl flex items-center justify-center gap-2.5 shadow-xl shadow-emerald-950/50 transition-all text-sm font-black uppercase tracking-wider active:scale-98"
               >
                 <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
-                <span>Order via WhatsApp (₹{subtotal})</span>
+                <span>Send Bill on WhatsApp (₹{subtotal})</span>
+              </button>
+
+              {/* 2. Secondary SMS Text Message Button */}
+              <button
+                type="button"
+                onClick={handleSmsCheckout}
+                className="w-full bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl flex items-center justify-center gap-2 border border-white/20 transition-all text-xs font-bold uppercase tracking-wider"
+              >
+                <MessageSquare className="w-4 h-4 text-amber-300" />
+                <span>Send Bill via SMS Text</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setStep('BASKET')}
-                className="w-full py-2 text-center text-xs text-white/50 hover:text-white underline"
+                className="w-full py-1 text-center text-xs text-white/50 hover:text-white underline"
               >
                 Back to Review Basket
               </button>

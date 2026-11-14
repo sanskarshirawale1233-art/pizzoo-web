@@ -182,3 +182,4 @@ export const INITIAL_MENU_ITEMS = [
     is_available: 1
   }
 ];
+

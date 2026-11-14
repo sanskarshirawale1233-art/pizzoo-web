@@ -8,7 +8,6 @@ import { MenuSection } from '../components/MenuSection';
 import { PizzaCustomizerModal } from '../components/PizzaCustomizerModal';
 import { CartSidebar } from '../components/CartSidebar';
 import { FloatingCartBar } from '../components/FloatingCartBar';
-import { UpiPaymentModal } from '../components/UpiPaymentModal';
 import { AboutSection } from '../components/AboutSection';
 import { GallerySection } from '../components/GallerySection';
 import { ContactSection } from '../components/ContactSection';
@@ -58,11 +57,8 @@ export const CustomerApp = () => {
       {/* Floating Bottom View Basket Bar & Toast */}
       <FloatingCartBar />
 
-      {/* Cart Sidebar Drawer (Direct WhatsApp Ordering) */}
+      {/* Cart Sidebar Drawer (Direct WhatsApp & SMS Ordering Exclusively) */}
       <CartSidebar />
-
-      {/* Offline UPI Payment Modal */}
-      <UpiPaymentModal />
     </div>
   );
 };
