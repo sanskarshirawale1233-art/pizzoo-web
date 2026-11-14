@@ -5,6 +5,15 @@ import { INITIAL_MENU_ITEMS } from '../data/initialMenuItems';
 const MenuContext = createContext(null);
 const LOCAL_STORAGE_KEY = 'pizzoo_menu_items';
 
+const withTimeout = (promise, ms = 6000) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Network request timed out after 6 seconds')), ms)
+    )
+  ]);
+};
+
 const normalizeMenuItem = (item) => {
   let ingredients = item.ingredients;
   if (typeof ingredients === 'string') {
@@ -54,8 +63,8 @@ const prepareForSupabase = (item) => ({
   image_url: item.image_url || '',
   ingredients: Array.isArray(item.ingredients) ? item.ingredients : [],
   tags: Array.isArray(item.tags) ? item.tags : [],
-  is_veg: item.is_veg ? 1 : 0,
-  is_available: item.is_available ? 1 : 0,
+  is_veg: Boolean(item.is_veg),
+  is_available: item.is_available === undefined ? true : Boolean(item.is_available),
   created_at: item.created_at || new Date().toISOString()
 });
 
@@ -94,29 +103,31 @@ export const MenuProvider = ({ children }) => {
       const sb = getSupabase();
 
       if (sb) {
-        const { data, error: supaErr } = await sb
-          .from('menu_items')
-          .select('*')
-          .order('created_at', { ascending: false });
+        try {
+          const res = await withTimeout(
+            sb
+              .from('menu_items')
+              .select('*')
+              .order('created_at', { ascending: false }),
+            6000
+          );
 
-        if (!supaErr && Array.isArray(data)) {
-          if (data.length > 0) {
-            const normalized = data.map(normalizeMenuItem);
-            setMenuItems(normalized);
-            saveToLocal(normalized);
-            setError(null);
-            setLoading(false);
-            return;
-          } else {
-            // First time setup on empty Supabase table: seed initial pizzas
-            try {
-              await sb.from('menu_items').upsert(INITIAL_MENU_ITEMS.map(prepareForSupabase));
-            } catch (seedErr) {
-              console.warn('Auto-seed error:', seedErr);
+          const { data, error: supaErr } = res || {};
+
+          if (!supaErr && Array.isArray(data)) {
+            if (data.length > 0) {
+              const normalized = data.map(normalizeMenuItem);
+              setMenuItems(normalized);
+              saveToLocal(normalized);
+              setError(null);
+              setLoading(false);
+              return;
             }
+          } else if (supaErr) {
+            console.warn('Supabase fetch error:', supaErr.message || supaErr);
           }
-        } else if (supaErr) {
-          console.warn('Supabase fetch error:', supaErr.message || supaErr);
+        } catch (fetchErr) {
+          console.warn('Supabase request failed or timed out:', fetchErr.message);
         }
       }
 
@@ -178,9 +189,13 @@ export const MenuProvider = ({ children }) => {
 
     try {
       const itemsToSync = (menuItems && menuItems.length > 0) ? menuItems : INITIAL_MENU_ITEMS;
-      const { error: supaErr } = await sb
-        .from('menu_items')
-        .upsert(itemsToSync.map(prepareForSupabase));
+      const res = await withTimeout(
+        sb
+          .from('menu_items')
+          .upsert(itemsToSync.map(prepareForSupabase)),
+        8000
+      );
+      const { error: supaErr } = res || {};
 
       if (supaErr) {
         return { success: false, error: supaErr.message || JSON.stringify(supaErr) };

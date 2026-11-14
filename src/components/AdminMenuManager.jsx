@@ -3,8 +3,34 @@ import { useMenu } from '../context/MenuContext';
 import { isSupabaseConfigured, getSupabaseConfig, updateSupabaseConfig } from '../lib/supabase';
 import { 
   Plus, Edit3, Trash2, CheckCircle2, XCircle, Upload, 
-  Search, UtensilsCrossed, Image as ImageIcon, Sparkles, AlertCircle, Save, X, Laptop, Cloud, Database, RefreshCw 
+  Search, UtensilsCrossed, Image as ImageIcon, Sparkles, AlertCircle, Save, X, Laptop, Cloud, Database, RefreshCw,
+  Copy, Check, Code
 } from 'lucide-react';
+
+const SUPABASE_SETUP_SQL = `-- Run this in Supabase SQL Editor:
+CREATE TABLE IF NOT EXISTS public.menu_items (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  italian_title TEXT,
+  category TEXT,
+  price_reg NUMERIC DEFAULT 0,
+  price_med NUMERIC DEFAULT 0,
+  price_lrg NUMERIC DEFAULT 0,
+  description TEXT,
+  image_url TEXT,
+  ingredients JSONB DEFAULT '[]'::jsonb,
+  tags JSONB DEFAULT '[]'::jsonb,
+  is_veg BOOLEAN DEFAULT true,
+  is_available BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.menu_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read" ON public.menu_items FOR SELECT USING (true);
+CREATE POLICY "Allow public insert" ON public.menu_items FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update" ON public.menu_items FOR UPDATE USING (true);
+CREATE POLICY "Allow public delete" ON public.menu_items FOR DELETE USING (true);`;
 
 export const AdminMenuManager = () => {
   const { menuItems, addMenuItem, updateMenuItem, toggleAvailability, deleteMenuItem, resetToDefaultMenu, syncAllToSupabase, loading } = useMenu();
@@ -195,35 +221,56 @@ export const AdminMenuManager = () => {
     }
   };
 
+  const [copiedSql, setCopiedSql] = useState(false);
+  const handleCopySql = () => {
+    try {
+      navigator.clipboard.writeText(SUPABASE_SETUP_SQL);
+      setCopiedSql(true);
+      setTimeout(() => setCopiedSql(false), 3000);
+    } catch {
+      alert('Could not auto-copy. Please manually copy the SQL shown below.');
+    }
+  };
+
   const handleSaveSupabase = async (e) => {
     e.preventDefault();
     setIsSyncing(true);
     setSyncStatusMsg('');
-    const configured = updateSupabaseConfig(supaUrlInput, supaKeyInput);
-    setSupaConfig(getSupabaseConfig());
+    try {
+      const configured = updateSupabaseConfig(supaUrlInput, supaKeyInput);
+      setSupaConfig(getSupabaseConfig());
 
-    if (configured) {
-      const res = await syncAllToSupabase();
-      if (res.success) {
-        setSyncStatusMsg(`✅ Success! Synced ${res.count} menu items to Supabase.`);
+      if (configured) {
+        const res = await syncAllToSupabase();
+        if (res.success) {
+          setSyncStatusMsg(`✅ Success! Synced ${res.count} menu items to Supabase.`);
+        } else {
+          setSyncStatusMsg(`⚠️ ${res.error}. Make sure "menu_items" table is created in Supabase SQL editor.`);
+        }
       } else {
-        setSyncStatusMsg(`⚠️ Saved credentials, but Supabase reported: ${res.error}. Make sure "menu_items" table exists.`);
+        setSyncStatusMsg('Supabase credentials cleared. Operating in local storage mode.');
       }
-    } else {
-      setSyncStatusMsg('Supabase credentials cleared. Operating in local storage mode.');
+    } catch (err) {
+      setSyncStatusMsg(`⚠️ Error: ${err.message}`);
+    } finally {
+      setIsSyncing(false);
     }
-    setIsSyncing(false);
   };
 
   const handleQuickSync = async () => {
     setIsSyncing(true);
-    const res = await syncAllToSupabase();
-    if (res.success) {
-      alert(`✅ Synced ${res.count} items with Supabase!`);
-    } else {
-      alert(`⚠️ Sync issue: ${res.error}\n\nMake sure your Supabase table "menu_items" exists.`);
+    try {
+      const res = await syncAllToSupabase();
+      if (res.success) {
+        setSyncStatusMsg(`✅ Synced ${res.count} items with Supabase!`);
+      } else {
+        setSyncStatusMsg(`⚠️ Sync issue: ${res.error}\n\nMake sure your Supabase table "menu_items" exists.`);
+      }
+    } catch (err) {
+      setSyncStatusMsg(`⚠️ Error: ${err.message}`);
+    } finally {
+      setIsSyncing(false);
     }
-    setIsSyncing(false);
   };
 
   const filteredItems = menuItems.filter(item => {
@@ -719,8 +766,8 @@ export const AdminMenuManager = () => {
       )}
       {/* Supabase Cloud Sync Modal */}
       {isSupaModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative text-stone-900">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl relative text-stone-900 my-8 max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsSupaModalOpen(false)}
               className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 p-2 rounded-full hover:bg-stone-100"
@@ -736,6 +783,31 @@ export const AdminMenuManager = () => {
               Connect your Supabase project so menu changes sync across both mobile and laptop instantly and never get deleted on refresh.
             </p>
 
+            {/* Step 1: SQL Setup Helper */}
+            <div className="bg-stone-900 text-stone-200 p-4 rounded-2xl mb-4 border border-stone-800">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                  <Code className="w-4 h-4" />
+                  <span>Step 1: Run SQL in Supabase (Required once)</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopySql}
+                  className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-all"
+                >
+                  {copiedSql ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedSql ? 'Copied SQL!' : 'Copy SQL Query'}</span>
+                </button>
+              </div>
+              <p className="text-[11px] text-stone-400 mb-2">
+                In your Supabase dashboard, click <b>SQL Editor</b> on the left, paste this SQL, and click <b>RUN</b>:
+              </p>
+              <pre className="text-[10px] bg-black/60 p-2.5 rounded-xl font-mono overflow-x-auto text-emerald-300 border border-stone-800 max-h-28">
+{SUPABASE_SETUP_SQL}
+              </pre>
+            </div>
+
+            {/* Step 2: Credentials and Sync */}
             <form onSubmit={handleSaveSupabase} className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-stone-700 block mb-1">
@@ -755,7 +827,7 @@ export const AdminMenuManager = () => {
                   Supabase Anon Public Key (API Key)
                 </label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                   value={supaKeyInput}
                   onChange={(e) => setSupaKeyInput(e.target.value)}
@@ -764,23 +836,25 @@ export const AdminMenuManager = () => {
               </div>
 
               {syncStatusMsg && (
-                <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl text-xs">
+                <div className={`p-3 rounded-xl text-xs leading-relaxed ${
+                  syncStatusMsg.startsWith('✅') 
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                    : 'bg-amber-50 text-amber-800 border border-amber-200'
+                }`}>
                   {syncStatusMsg}
                 </div>
               )}
 
-              <div className="pt-2 flex flex-wrap items-center justify-between gap-2">
-                {supaConfig.isConfigured && (
-                  <button
-                    type="button"
-                    onClick={handleQuickSync}
-                    disabled={isSyncing}
-                    className="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold flex items-center gap-1.5"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                    <span>Sync All Current Pizzas Now</span>
-                  </button>
-                )}
+              <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-stone-100">
+                <button
+                  type="button"
+                  onClick={handleQuickSync}
+                  disabled={isSyncing}
+                  className="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                  <span>{isSyncing ? 'Syncing...' : 'Sync All Current Pizzas Now'}</span>
+                </button>
 
                 <div className="flex items-center gap-2 ml-auto">
                   <button
@@ -793,7 +867,7 @@ export const AdminMenuManager = () => {
                   <button
                     type="submit"
                     disabled={isSyncing}
-                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md flex items-center gap-1.5"
+                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md flex items-center gap-1.5 transition-colors disabled:opacity-50"
                   >
                     {isSyncing ? 'Saving & Syncing...' : 'Save & Sync Cloud'}
                   </button>

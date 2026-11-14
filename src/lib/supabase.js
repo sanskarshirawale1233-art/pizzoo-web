@@ -31,11 +31,15 @@ export const getSupabaseConfig = () => ({
 });
 
 export const updateSupabaseConfig = (url, key) => {
-  const cleanUrl = (url || '').trim();
+  let cleanUrl = (url || '').trim();
   const cleanKey = (key || '').trim();
 
-  currentUrl = cleanUrl;
-  currentKey = cleanKey;
+  if (cleanUrl && !cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+    cleanUrl = `https://${cleanUrl}`;
+  }
+
+  currentUrl = cleanUrl || DEFAULT_URL;
+  currentKey = cleanKey || DEFAULT_KEY;
 
   try {
     if (cleanUrl) localStorage.setItem('pizzoo_supabase_url', cleanUrl);
@@ -45,8 +49,12 @@ export const updateSupabaseConfig = (url, key) => {
     else localStorage.removeItem('pizzoo_supabase_key');
   } catch {}
 
-  if (cleanUrl && cleanKey) {
-    clientInstance = createClient(cleanUrl, cleanKey);
+  if (currentUrl && currentKey) {
+    try {
+      clientInstance = createClient(currentUrl, currentKey);
+    } catch {
+      clientInstance = null;
+    }
   } else {
     clientInstance = null;
   }
