@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIZZOO | Premium Pizza | Bhandup West, Mumbai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Oswald:wght@400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+:root {
+  --red: #C8102E;
+  --gold: #F0A500;
+  --dark: #0f0a05;
+  --dark2: #1a1008;
+  --cream: #FFF8F0;
+  --brown: #3D1F00;
+  --white: #ffffff;
+  --gray: #888;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--dark);
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+/* ===== INTRO ANIMATION ===== */
+#intro-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #0a0500;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0;
+  transition: opacity 1s ease, visibility 1s;
+  overflow: hidden;
+}
+#intro-screen.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+
+/* Ambient background glow */
+#intro-screen::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 300px;
+  background: radial-gradient(ellipse at bottom, rgba(255,80,0,0.18) 0%, transparent 70%);
+  animation: ambientPulse 2s infinite alternate;
+}
+@keyframes ambientPulse {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
+}
+
+/* ---- OVEN SVG SCENE ---- */
+.intro-scene {
+  position: relative;
+  width: 360px;
+  height: 320px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* The SVG oven sits in the scene */
+#oven-svg {
+  position: absolute;
+  bottom: 0;
+  width: 360px;
+  height: 260px;
+}
+
+/* Pizza SVG slides out from oven opening */
+#pizza-svg {
+  position: absolute;
+  bottom: 82px;
+  left: 50%;
+  width: 160px;
+  height: 160px;
+  transform: translateX(-50%) translateX(-200px) scale(0.4);
+  opacity: 0;
+  filter: drop-shadow(0 12px 40px rgba(255,120,0,0.85));
+  z-index: 20;
+  animation: pizzaSlideOut 1.4s cubic-bezier(0.16,1,0.3,1) 1.8s forwards;
+}
+@keyframes pizzaSlideOut {
+  0%   { transform: translateX(-50%) translateX(-200px) scale(0.4); opacity: 0; }
+  20%  { opacity: 1; }
+  60%  { transform: translateX(-50%) translateX(0px) scale(1.08); opacity: 1; }
+  80%  { transform: translateX(-50%) translateX(6px) scale(1.04); }
+  100% { transform: translateX(-50%) translateX(0px) scale(1); opacity: 1; }
+}
+
+/* Heat shimmer lines */
+.steam-line {
+  position: absolute;
+  width: 3px; border-radius: 3px;
+  background: linear-gradient(to top, rgba(255,160,60,0.5), transparent);
+  animation: steamRise 1.2s ease-in-out infinite;
+  opacity: 0;
+}
+.steam-line:nth-child(1) { left: 130px; bottom: 240px; height: 50px; animation-delay: 0.1s; }
+.steam-line:nth-child(2) { left: 160px; bottom: 240px; height: 70px; animation-delay: 0.4s; }
+.steam-line:nth-child(3) { left: 190px; bottom: 240px; height: 45px; animation-delay: 0.2s; }
+.steam-line:nth-child(4) { left: 220px; bottom: 240px; height: 60px; animation-delay: 0.6s; }
+@keyframes steamRise {
+  0%   { opacity: 0; transform: translateY(0) scaleX(1); }
+  30%  { opacity: 0.8; }
+  100% { opacity: 0; transform: translateY(-50px) scaleX(0.3); }
+}
+
+/* Logo reveals after pizza is out */
+.intro-logo {
+  opacity: 0;
+  text-align: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+  position: relative;
+  z-index: 30;
+  animation: logoReveal 0.9s cubic-bezier(0.22,1,0.36,1) 3.4s both;
+}
+@keyframes logoReveal {
+  from { opacity: 0; transform: translateY(24px) scale(0.88); filter: blur(8px); }
+  to   { opacity: 1; transform: translateY(0) scale(1);        filter: blur(0px); }
+}
+.intro-logo img {
+  height: 130px;
+  margin-bottom: 8px;
+  /* Remove white background from logo PNG */
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 28px rgba(240,165,0,0.8)) drop-shadow(0 0 8px rgba(255,120,0,0.5)) brightness(1.1) contrast(1.05);
+}
+.intro-tagline {
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.45em;
+  color: var(--gold);
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeUp 0.7s ease 4.1s forwards;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Oven glow pulses when pizza comes out */
+#oven-glow {
+  animation: ovenGlowPop 0.6s ease 1.7s both;
+}
+@keyframes ovenGlowPop {
+  0%   { opacity: 0.4; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* ===== NAV ===== */
+nav {
+  position: fixed; top: 0; width: 100%; z-index: 1000;
+  padding: 0 30px;
+  background: rgba(10,6,2,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(240,165,0,0.15);
+  display: flex; align-items: center; justify-content: space-between;
+  height: 70px;
+}
+.nav-logo img { height: 50px; mix-blend-mode: multiply; filter: drop-shadow(0 0 10px rgba(240,165,0,0.4)) brightness(1.02); }
+.nav-links { display: flex; gap: 40px; list-style: none; }
+.nav-links a {
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px; letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none; text-transform: uppercase;
+  transition: color 0.3s;
+  position: relative;
+}
+.nav-links a::after {
+  content:''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px;
+  background: var(--gold); transition: width 0.3s;
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-links a:hover::after { width: 100%; }
+
+.nav-actions { display: flex; align-items: center; gap: 16px; }
+.cart-btn {
+  position: relative; background: none; border: none; color: white; cursor: pointer;
+  font-size: 22px; padding: 6px;
+}
+.cart-badge {
+  position: absolute; top: -2px; right: -6px;
+  background: var(--red); color: white; font-size: 10px;
+  font-weight: 900; min-width: 18px; height: 18px;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-family: 'Oswald', sans-serif;
+}
+.wa-btn {
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  color: white; padding: 8px 20px; border-radius: 50px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px; letter-spacing: 0.15em;
+  text-decoration: none; display: flex; align-items: center; gap: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 15px rgba(37,211,102,0.3);
+}
+.wa-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(37,211,102,0.5); }
+
+.hamburger { display: none; background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+
+/* ===== HERO ===== */
+#home {
+  height: 100vh; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background: url('https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1600') center/cover no-repeat;
+}
+.hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(10,6,2,0.92) 40%, rgba(10,6,2,0.6) 100%);
+}
+.hero-content {
+  position: relative; z-index: 2;
+  max-width: 900px; text-align: center; padding: 20px;
+}
+.hero-badge {
+  display: inline-block;
+  background: rgba(240,165,0,0.15);
+  border: 1px solid rgba(240,165,0,0.4);
+  color: var(--gold); padding: 6px 20px;
+  border-radius: 50px;
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  letter-spacing: 0.35em; text-transform: uppercase;
+  margin-bottom: 24px;
+  animation: fadeInDown 0.8s ease 6.2s both;
+}
+.hero-logo {
+  height: 160px; margin-bottom: 24px;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 40px rgba(240,165,0,0.6)) brightness(1.08) contrast(1.05);
+  animation: heroLogo 1s cubic-bezier(0.22,1,0.36,1) 6.4s both;
+}
+@keyframes heroLogo {
+  from { opacity: 0; transform: scale(0.8) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero-h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 900; line-height: 1.1;
+  margin-bottom: 20px;
+  animation: fadeUp2 1s ease 6.6s both;
+}
+.hero-h1 span { color: var(--gold); }
+@keyframes fadeUp2 {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero-sub {
+  font-size: 1rem; color: rgba(255,255,255,0.65);
+  letter-spacing: 0.05em; line-height: 1.7;
+  margin-bottom: 36px;
+  animation: fadeUp2 1s ease 6.9s both;
+}
+.hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+  animation: fadeUp2 1s ease 7.1s both;
+}
+.btn-primary {
+  background: var(--red); color: white;
+  padding: 14px 36px; border-radius: 4px;
+  font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: 0.2em;
+  text-decoration: none; text-transform: uppercase;
+  transition: all 0.3s;
+  box-shadow: 0 8px 25px rgba(200,16,46,0.4);
+}
+.btn-primary:hover { background: #a00e26; transform: translateY(-3px); box-shadow: 0 12px 35px rgba(200,16,46,0.6); }
+.btn-outline {
+  background: transparent; color: white;
+  border: 2px solid rgba(255,255,255,0.4);
+  padding: 14px 36px; border-radius: 4px;
+  font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: 0.2em;
+  text-decoration: none; text-transform: uppercase;
+  transition: all 0.3s;
+}
+.btn-outline:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-3px); }
+
+.scroll-hint {
+  position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+  text-align: center; z-index: 2;
+  animation: bounce 2s infinite;
+  opacity: 0.5;
+}
+.scroll-hint span { display: block; font-size: 10px; letter-spacing: 0.3em; color: var(--gold); margin-bottom: 6px; font-family: 'Oswald',sans-serif; }
+@keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
+
+/* ===== STATS BANNER ===== */
+.stats-banner {
+  background: linear-gradient(90deg, var(--red), #8b0000, var(--red));
+  background-size: 200%;
+  animation: gradShift 4s linear infinite;
+  padding: 16px 40px;
+  display: flex; gap: 60px; justify-content: center; flex-wrap: wrap;
+}
+@keyframes gradShift { 0%,100%{background-position:0%} 50%{background-position:100%} }
+.stat-item { text-align: center; }
+.stat-num { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 900; }
+.stat-label { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 0.3em; opacity: 0.8; text-transform: uppercase; }
+
+/* ===== SECTION TITLE ===== */
+.section-header { text-align: center; margin-bottom: 60px; }
+.section-eyebrow {
+  font-family: 'Oswald', sans-serif; font-size: 11px;
+  letter-spacing: 0.4em; color: var(--gold);
+  text-transform: uppercase; margin-bottom: 12px;
+  display: block;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 900; line-height: 1.1;
+}
+.section-line {
+  width: 60px; height: 3px;
+  background: var(--gold); margin: 16px auto 0;
+  border-radius: 2px;
+}
+
+/* ===== WHY US ===== */
+#why {
+  padding: 100px 40px;
+  background: var(--dark2);
+  position: relative; overflow: hidden;
+}
+#why::before {
+  content:'';
+  position: absolute; top: -200px; right: -200px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(240,165,0,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+.why-grid {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 32px;
+}
+.why-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(240,165,0,0.12);
+  border-radius: 16px; padding: 36px 28px;
+  text-align: center;
+  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+.why-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(240,165,0,0.4);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+}
+.why-icon { font-size: 2.5rem; margin-bottom: 16px; }
+.why-card h3 { font-family: 'Oswald', sans-serif; font-size: 1.1rem; letter-spacing: 0.1em; margin-bottom: 10px; color: var(--gold); }
+.why-card p { font-size: 0.88rem; color: rgba(255,255,255,0.55); line-height: 1.7; }
+
+/* ===== MENU TABS ===== */
+#menu {
+  padding: 100px 20px;
+  background: var(--dark);
+  position: relative;
+}
+.menu-tabs {
+  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 60px;
+}
+.tab-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+  padding: 10px 22px; border-radius: 50px; cursor: pointer;
+  font-family: 'Oswald', sans-serif; font-size: 12px;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  transition: all 0.3s;
+}
+.tab-btn:hover, .tab-btn.active {
+  background: var(--red);
+  border-color: var(--red);
+  color: white;
+  box-shadow: 0 4px 20px rgba(200,16,46,0.4);
+}
+
+.menu-panel { display: none; }
+.menu-panel.active { display: block; }
+
+/* Size selector (pizza tabs) */
+.size-tabs {
+  display: flex; gap: 8px; justify-content: center; margin-bottom: 40px;
+}
+.size-tab {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5); padding: 7px 18px; border-radius: 50px;
+  font-family: 'Oswald',sans-serif; font-size: 11px; letter-spacing: 0.15em;
+  cursor: pointer; transition: all 0.3s;
+}
+.size-tab.active { background: var(--gold); border-color: var(--gold); color: var(--dark); }
+
+/* Pizza Cards */
+.pizza-grid {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+}
+.pizza-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px; overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+  position: relative;
+}
+.pizza-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(240,165,0,0.4);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.pizza-card-img {
+  width: 100%; height: 190px; object-fit: cover;
+  transition: transform 0.5s;
+}
+.pizza-card:hover .pizza-card-img { transform: scale(1.08); }
+.pizza-img-wrap { overflow: hidden; position: relative; }
+.veg-badge, .nonveg-badge {
+  position: absolute; top: 12px; left: 12px;
+  padding: 4px 10px; border-radius: 4px;
+  font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 0.1em;
+}
+.veg-badge { background: rgba(34,197,94,0.9); color: white; }
+.nonveg-badge { background: rgba(220,38,38,0.9); color: white; }
+
+.pizza-card-body { padding: 20px; }
+.pizza-card-name {
+  font-family: 'Oswald', sans-serif; font-size: 1rem;
+  letter-spacing: 0.08em; margin-bottom: 6px;
+}
+.pizza-card-desc {
+  font-size: 0.78rem; color: rgba(255,255,255,0.4);
+  line-height: 1.5; margin-bottom: 14px;
+}
+.pizza-card-footer { display: flex; align-items: center; justify-content: space-between; }
+.pizza-price { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--gold); }
+.pizza-price small { font-family: 'Lato', sans-serif; font-size: 0.65rem; color: var(--gray); display: block; }
+.add-btn {
+  background: var(--red); color: white; border: none;
+  padding: 8px 18px; border-radius: 6px; cursor: pointer;
+  font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 0.1em;
+  transition: all 0.2s;
+}
+.add-btn:hover { background: #a00e26; transform: scale(1.05); }
+
+/* Extras section cards */
+.extras-grid {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+.extras-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.3s; cursor: pointer;
+}
+.extras-card:hover {
+  border-color: rgba(240,165,0,0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.extras-name { font-family: 'Oswald', sans-serif; font-size: 0.95rem; margin-bottom: 4px; }
+.extras-sub { font-size: 0.75rem; color: var(--gray); }
+.extras-price { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 1.2rem; }
+
+/* Category headers */
+.cat-header {
+  max-width: 1100px; margin: 0 auto 24px;
+  font-family: 'Playfair Display', serif; font-size: 1.4rem;
+  color: var(--gold); border-bottom: 1px solid rgba(240,165,0,0.2);
+  padding-bottom: 10px;
+}
+.cat-section { margin-bottom: 50px; }
+
+/* Momos table */
+.momos-table-wrap { max-width: 700px; margin: 0 auto; }
+.momos-table { width: 100%; border-collapse: collapse; }
+.momos-table th {
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--gold); padding: 12px 16px;
+  border-bottom: 1px solid rgba(240,165,0,0.2); text-align: center;
+}
+.momos-table td {
+  padding: 12px 16px; font-size: 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.05);
+  text-align: center;
+}
+.momos-table td:first-child { text-align: left; font-family: 'Oswald', sans-serif; }
+.momos-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+/* ===== PIZZA MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: #1a1008; border: 1px solid rgba(240,165,0,0.2);
+  border-radius: 24px; max-width: 900px; width: 100%;
+  max-height: 90vh; overflow-y: auto;
+  animation: modalIn 0.4s cubic-bezier(0.22,1,0.36,1);
+}
+@keyframes modalIn { from { opacity:0; transform:scale(0.92) translateY(20px); } to { opacity:1; transform:scale(1) translateY(0); } }
+.modal-img { width: 100%; height: 280px; object-fit: cover; border-radius: 24px 24px 0 0; }
+.modal-body { padding: 36px; }
+.modal-title { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 8px; }
+.modal-badge { display: inline-block; padding: 4px 14px; border-radius: 50px; font-size: 11px; font-family: 'Oswald',sans-serif; letter-spacing: 0.1em; margin-bottom: 20px; }
+.modal-badge.veg { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+.modal-badge.nonveg { background: rgba(220,38,38,0.15); color: #f87171; border: 1px solid rgba(220,38,38,0.3); }
+
+.modal-section-title { font-family: 'Oswald',sans-serif; font-size: 11px; letter-spacing: 0.3em; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; margin-top: 24px; }
+.modal-desc { font-size: 0.9rem; color: rgba(255,255,255,0.65); line-height: 1.8; }
+.ingredient-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.ingredient-chip {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  padding: 5px 14px; border-radius: 50px; font-size: 0.8rem; color: rgba(255,255,255,0.7);
+}
+.modal-size-btns { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+.modal-size-btn {
+  flex: 1; min-width: 120px; padding: 16px;
+  background: rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 12px; cursor: pointer; transition: all 0.2s;
+  text-align: center;
+}
+.modal-size-btn:hover, .modal-size-btn.selected {
+  border-color: var(--gold); background: rgba(240,165,0,0.1);
+}
+.modal-size-label { font-family: 'Oswald',sans-serif; font-size: 13px; letter-spacing: 0.1em; color: white; display: block; margin-bottom: 4px; }
+.modal-size-price { font-family: 'Playfair Display',serif; color: var(--gold); font-size: 1.2rem; }
+.modal-footer { margin-top: 32px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.modal-add-btn {
+  flex: 1; background: var(--red); color: white; border: none;
+  padding: 16px; border-radius: 10px; cursor: pointer;
+  font-family: 'Oswald',sans-serif; font-size: 14px; letter-spacing: 0.15em;
+  transition: all 0.2s;
+}
+.modal-add-btn:hover { background: #a00e26; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(200,16,46,0.5); }
+.modal-close {
+  background: rgba(255,255,255,0.08); color: white; border: none;
+  width: 52px; height: 52px; border-radius: 10px; cursor: pointer;
+  font-size: 20px; transition: all 0.2s;
+}
+.modal-close:hover { background: rgba(255,255,255,0.15); }
+
+/* ===== CART SIDEBAR ===== */
+.cart-sidebar {
+  position: fixed; inset-y: 0; right: 0; width: 380px; max-width: 100vw;
+  background: #0f0a05; border-left: 1px solid rgba(240,165,0,0.15);
+  z-index: 1500; transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  display: flex; flex-direction: column;
+}
+.cart-sidebar.open { transform: translateX(0); }
+.cart-header { padding: 24px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; }
+.cart-header h3 { font-family: 'Playfair Display',serif; font-size: 1.5rem; }
+.cart-close { background: none; border: none; color: white; font-size: 28px; cursor: pointer; opacity: 0.6; transition: opacity 0.2s; }
+.cart-close:hover { opacity: 1; }
+.cart-items { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.cart-empty { text-align: center; padding: 80px 20px; opacity: 0.4; }
+.cart-empty i { font-size: 3rem; margin-bottom: 12px; display: block; }
+.cart-empty span { font-family: 'Oswald',sans-serif; font-size: 13px; letter-spacing: 0.2em; }
+.cart-item {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px; padding: 14px; display: flex; justify-content: space-between; align-items: center;
+}
+.cart-item-name { font-family: 'Oswald',sans-serif; font-size: 0.9rem; letter-spacing: 0.05em; }
+.cart-item-size { font-size: 0.72rem; color: var(--gray); margin-top: 2px; }
+.cart-item-price { font-family: 'Playfair Display',serif; color: var(--gold); }
+.cart-item-remove { background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer; margin-left: 12px; transition: color 0.2s; }
+.cart-item-remove:hover { color: var(--red); }
+.cart-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.08); }
+.cart-total { display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center; }
+.cart-total-label { font-family: 'Oswald',sans-serif; font-size: 13px; letter-spacing: 0.2em; color: var(--gray); }
+.cart-total-amount { font-family: 'Playfair Display',serif; font-size: 1.8rem; color: var(--gold); }
+.checkout-btn {
+  width: 100%; background: linear-gradient(135deg, #25D366, #128C7E);
+  color: white; border: none; padding: 18px;
+  border-radius: 12px; font-family: 'Oswald',sans-serif;
+  font-size: 14px; letter-spacing: 0.2em; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all 0.3s; box-shadow: 0 8px 25px rgba(37,211,102,0.3);
+}
+.checkout-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(37,211,102,0.5); }
+
+/* ===== ABOUT ===== */
+#about {
+  padding: 100px 40px;
+  background: var(--dark2);
+}
+.about-wrap {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+}
+.about-img-wrap { position: relative; }
+.about-img {
+  width: 100%; border-radius: 20px; object-fit: cover; height: 450px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+}
+.about-badge-float {
+  position: absolute; bottom: -20px; right: -20px;
+  background: var(--red); border-radius: 16px; padding: 20px;
+  text-align: center; box-shadow: 0 10px 30px rgba(200,16,46,0.4);
+}
+.about-badge-num { font-family: 'Playfair Display',serif; font-size: 2rem; font-weight: 900; }
+.about-badge-text { font-family: 'Oswald',sans-serif; font-size: 9px; letter-spacing: 0.25em; opacity: 0.85; }
+.about-text p { font-size: 0.95rem; color: rgba(255,255,255,0.65); line-height: 1.9; margin-bottom: 20px; }
+.about-features { margin-top: 30px; display: flex; flex-direction: column; gap: 14px; }
+.about-feature { display: flex; align-items: center; gap: 14px; }
+.about-feature-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(240,165,0,0.1); border: 1px solid rgba(240,165,0,0.2); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 1rem; flex-shrink: 0; }
+.about-feature-text { font-size: 0.88rem; color: rgba(255,255,255,0.7); }
+
+/* ===== GALLERY ===== */
+#gallery { padding: 100px 20px; background: var(--dark); }
+.gallery-grid {
+  max-width: 1200px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 260px);
+  gap: 12px;
+}
+.gallery-item { overflow: hidden; border-radius: 12px; position: relative; }
+.gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+.gallery-item:hover img { transform: scale(1.08); }
+.gallery-item:first-child { grid-row: span 2; }
+.gallery-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(10,6,2,0.7) 0%, transparent 50%);
+  opacity: 0; transition: opacity 0.3s;
+  display: flex; align-items: flex-end; padding: 20px;
+}
+.gallery-item:hover .gallery-overlay { opacity: 1; }
+.gallery-overlay-text { font-family: 'Oswald',sans-serif; font-size: 14px; letter-spacing: 0.1em; }
+
+/* ===== CONTACT ===== */
+#contact { padding: 100px 40px; background: var(--dark2); }
+.contact-wrap { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+.contact-info h3 { font-family: 'Playfair Display',serif; font-size: 1.8rem; margin-bottom: 30px; }
+.contact-item { display: flex; gap: 18px; align-items: flex-start; margin-bottom: 28px; }
+.contact-icon { width: 46px; height: 46px; border-radius: 12px; background: rgba(240,165,0,0.1); border: 1px solid rgba(240,165,0,0.2); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 1rem; flex-shrink: 0; }
+.contact-text label { font-family: 'Oswald',sans-serif; font-size: 10px; letter-spacing: 0.3em; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 4px; }
+.contact-text a, .contact-text p { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.95rem; }
+.contact-text a:hover { color: var(--gold); }
+
+.contact-map-wrap { border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); }
+.contact-map-wrap iframe { width: 100%; height: 350px; border: none; filter: invert(0.9) hue-rotate(180deg); }
+
+/* ===== FOOTER ===== */
+footer {
+  background: #0a0602;
+  border-top: 1px solid rgba(240,165,0,0.1);
+  padding: 60px 40px 30px;
+}
+.footer-wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 60px; margin-bottom: 50px; }
+.footer-brand img { height: 70px; margin-bottom: 16px; }
+.footer-brand p { font-size: 0.85rem; color: rgba(255,255,255,0.4); line-height: 1.8; }
+.footer-links h4 { font-family: 'Oswald',sans-serif; font-size: 11px; letter-spacing: 0.3em; color: var(--gold); text-transform: uppercase; margin-bottom: 20px; }
+.footer-links ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.footer-links a { font-size: 0.88rem; color: rgba(255,255,255,0.45); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--gold); }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.footer-copy { font-size: 0.78rem; color: rgba(255,255,255,0.25); font-family: 'Oswald',sans-serif; letter-spacing: 0.2em; }
+.footer-social { display: flex; gap: 12px; }
+.social-btn { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.4); text-decoration: none; transition: all 0.2s; }
+.social-btn:hover { background: var(--gold); color: var(--dark); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .hamburger { display: block; }
+  nav.mobile-open .nav-links {
+    display: flex; flex-direction: column; position: fixed;
+    top: 70px; left: 0; right: 0; background: rgba(10,6,2,0.98);
+    padding: 30px; gap: 24px; border-bottom: 1px solid rgba(240,165,0,0.1);
+  }
+  .about-wrap { grid-template-columns: 1fr; gap: 40px; }
+  .contact-wrap { grid-template-columns: 1fr; }
+  .gallery-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+  .gallery-item:first-child { grid-row: auto; }
+  .footer-wrap { grid-template-columns: 1fr; gap: 40px; }
+  .modal-box { border-radius: 16px; }
+  .cart-sidebar { width: 100%; }
+  .hero-logo { height: 110px; }
+  .stats-banner { gap: 30px; padding: 16px 20px; }
+}
+
+/* ===== SCROLL REVEAL ===== */
+.reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+
+<!-- INTRO SCREEN -->
+<div id="intro-screen">
+  <div class="intro-scene">
+    <!-- Steam lines above oven -->
+    <div class="steam-line"></div>
+    <div class="steam-line"></div>
+    <div class="steam-line"></div>
+    <div class="steam-line"></div>
+
+    <!-- PIZZA SVG (slides out from oven) -->
+    <svg id="pizza-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Pizza peel (wooden paddle) underneath -->
+      <rect x="60" y="155" width="80" height="14" rx="4" fill="#8B5E2A" opacity="0.9"/>
+      <rect x="88" y="168" width="24" height="50" rx="5" fill="#7A4E1C"/>
+      <!-- Pizza crust (outer ring) -->
+      <circle cx="100" cy="108" r="82" fill="#D4884A"/>
+      <circle cx="100" cy="108" r="72" fill="#E8A44E"/>
+      <!-- Sauce base -->
+      <circle cx="100" cy="108" r="65" fill="#C0392B"/>
+      <!-- Cheese layer -->
+      <ellipse cx="100" cy="108" rx="58" ry="55" fill="#F5D76E" opacity="0.9"/>
+      <!-- Cheese bubbles / melt patches -->
+      <ellipse cx="85" cy="95" rx="22" ry="18" fill="#F0C84A" opacity="0.7"/>
+      <ellipse cx="118" cy="120" rx="18" ry="14" fill="#F0C84A" opacity="0.7"/>
+      <ellipse cx="95" cy="128" rx="20" ry="12" fill="#EEDDA0" opacity="0.5"/>
+      <!-- Tomato slices (red) -->
+      <circle cx="90" cy="90" r="10" fill="#E74C3C"/>
+      <circle cx="88" cy="90" r="5" fill="#C0392B" opacity="0.5"/>
+      <circle cx="116" cy="95" r="9" fill="#E74C3C"/>
+      <circle cx="100" cy="118" r="10" fill="#E74C3C"/>
+      <circle cx="80" cy="115" r="8" fill="#C74B3C"/>
+      <circle cx="118" cy="118" r="8" fill="#E74C3C"/>
+      <!-- Pepperoni (darker circles) -->
+      <circle cx="107" cy="93" r="7" fill="#8B1A1A"/>
+      <circle cx="91" cy="110" r="7" fill="#8B1A1A"/>
+      <circle cx="108" cy="110" r="6" fill="#922020"/>
+      <!-- Olive (black) -->
+      <ellipse cx="83" cy="100" rx="5" ry="6" fill="#2C2C2C"/>
+      <ellipse cx="115" cy="108" rx="4" ry="5" fill="#2C2C2C"/>
+      <!-- Basil leaves (green) -->
+      <ellipse cx="97" cy="100" rx="6" ry="4" fill="#27AE60" transform="rotate(-20 97 100)"/>
+      <ellipse cx="110" cy="123" rx="5" ry="3" fill="#2ECC71" transform="rotate(15 110 123)"/>
+      <!-- Crust highlight -->
+      <circle cx="100" cy="108" r="82" fill="none" stroke="#C47A3A" stroke-width="4" opacity="0.6"/>
+      <!-- Hot shine on top -->
+      <ellipse cx="78" cy="84" rx="12" ry="6" fill="white" opacity="0.1" transform="rotate(-30 78 84)"/>
+    </svg>
+
+    <!-- OVEN SVG -->
+    <svg id="oven-svg" viewBox="0 0 360 260" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="ovenGlowGrad" cx="50%" cy="100%" r="70%">
+          <stop offset="0%" stop-color="#FF6B00" stop-opacity="0.8"/>
+          <stop offset="60%" stop-color="#FF3300" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="ovenBodyGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#3D2200"/>
+          <stop offset="100%" stop-color="#1A0E00"/>
+        </linearGradient>
+        <linearGradient id="metalGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#4a2800"/>
+          <stop offset="40%" stop-color="#7a4a1a"/>
+          <stop offset="100%" stop-color="#3a1e00"/>
+        </linearGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+          <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- Oven body -->
+      <rect x="20" y="40" width="320" height="200" rx="18" fill="url(#ovenBodyGrad)" stroke="#5a3000" stroke-width="3"/>
+      <!-- Metal top edge -->
+      <rect x="20" y="40" width="320" height="28" rx="18" fill="url(#metalGrad)" opacity="0.8"/>
+      <!-- Control panel top -->
+      <circle cx="60" cy="54" r="8" fill="#1a0e00" stroke="#8B5E2A" stroke-width="2"/>
+      <circle cx="60" cy="54" r="4" fill="#FF6B00" opacity="0.9"/>
+      <circle cx="300" cy="54" r="8" fill="#1a0e00" stroke="#8B5E2A" stroke-width="2"/>
+      <circle cx="300" cy="54" r="4" fill="#FF6B00" opacity="0.9"/>
+      <rect x="140" y="48" width="80" height="12" rx="4" fill="#1a0e00" stroke="#5a3000" stroke-width="1.5"/>
+
+      <!-- Oven door (main opening) - dark interior -->
+      <rect x="55" y="75" width="250" height="150" rx="12" fill="#0D0700" stroke="#6B3F0A" stroke-width="3"/>
+
+      <!-- Interior fire glow -->
+      <ellipse cx="180" cy="200" rx="130" ry="40" fill="url(#ovenGlowGrad)" id="oven-glow"/>
+      <!-- Flame colors inside -->
+      <ellipse cx="180" cy="215" rx="80" ry="18" fill="#FF4500" opacity="0.35" style="animation: fireflicker2 0.35s infinite alternate;"/>
+      <ellipse cx="180" cy="215" rx="50" ry="10" fill="#FF8C00" opacity="0.3" style="animation: fireflicker2 0.25s infinite alternate-reverse;"/>
+
+      <!-- Door frame / trim -->
+      <rect x="55" y="75" width="250" height="150" rx="12" fill="none" stroke="#8B5E2A" stroke-width="2.5" opacity="0.7"/>
+
+      <!-- Bottom shelf rack lines inside oven -->
+      <line x1="70" y1="195" x2="295" y2="195" stroke="#3a2000" stroke-width="2" opacity="0.6"/>
+      <line x1="70" y1="185" x2="295" y2="185" stroke="#3a2000" stroke-width="2" opacity="0.4"/>
+
+      <!-- Oven door handle bar -->
+      <rect x="100" y="232" width="160" height="10" rx="5" fill="url(#metalGrad)" stroke="#8B5E2A" stroke-width="1.5"/>
+      <!-- Handle grips -->
+      <rect x="105" y="230" width="20" height="14" rx="4" fill="#5a3000"/>
+      <rect x="235" y="230" width="20" height="14" rx="4" fill="#5a3000"/>
+
+      <!-- Bottom base of oven -->
+      <rect x="40" y="238" width="280" height="18" rx="6" fill="#2a1600" stroke="#5a3000" stroke-width="2"/>
+      <!-- Feet -->
+      <rect x="60" y="252" width="30" height="10" rx="3" fill="#1a0e00"/>
+      <rect x="270" y="252" width="30" height="10" rx="3" fill="#1a0e00"/>
+
+      <!-- Side vents -->
+      <rect x="25" y="120" width="18" height="3" rx="1" fill="#5a3000" opacity="0.6"/>
+      <rect x="25" y="128" width="18" height="3" rx="1" fill="#5a3000" opacity="0.6"/>
+      <rect x="25" y="136" width="18" height="3" rx="1" fill="#5a3000" opacity="0.6"/>
+      <rect x="317" y="120" width="18" height="3" rx="1" fill="#5a3000" opacity="0.6"/>
+      <rect x="317" y="128" width="18" height="3" rx="1" fill="#5a3000" opacity="0.6"/>
+      <rect x="317" y="136" width="18" height="3" rx="1" fill="#5a3000" opacity="0.6"/>
+    </svg>
+  </div>
+
+  <!-- Logo appears after pizza slides out -->
+  <div class="intro-logo">
+    <img src="logo.png" alt="Pizzoo">
+    <div class="intro-tagline">Bhandup West · Mumbai · Est. 2024</div>
+  </div>
+</div>
+
+<style>
+@keyframes fireflicker2 {
+  from { opacity: 0.25; transform: scaleX(0.92); }
+  to   { opacity: 0.45; transform: scaleX(1.08); }
+}
+</style>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="nav-logo">
+    <img src="logo.png" alt="Pizzoo" onerror="this.src='https://via.placeholder.com/120x50?text=PIZZOO'">
+  </div>
+  <ul class="nav-links">
+    <li><a href="#home">Home</a></li>
+    <li><a href="#menu">Menu</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button class="cart-btn" onclick="toggleCart()">
+      <i class="fas fa-basket-shopping"></i>
+      <span class="cart-badge" id="cart-count">0</span>
+    </button>
+    <a href="https://wa.me/917738009029" target="_blank" class="wa-btn">
+      <i class="fab fa-whatsapp"></i> Order Now
+    </a>
+    <button class="hamburger" onclick="toggleMobileNav()"><i class="fas fa-bars"></i></button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="home">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-badge">🍕 Fresh · Handcrafted · Premium</div>
+    <img src="logo.png" class="hero-logo" alt="Pizzoo" onerror="this.src='https://via.placeholder.com/250x160?text=PIZZOO'">
+    <h1 class="hero-h1">
+      The Art of <span>Italian Pizza</span><br>in Mumbai
+    </h1>
+    <p class="hero-sub">Authentic Italian pizza crafted with premium quality cheese & fresh ingredients.<br>No quality compromise. Ever.</p>
+    <div class="hero-btns">
+      <a href="#menu" class="btn-primary">Explore Menu</a>
+      <a href="tel:7738009029" class="btn-outline"><i class="fas fa-phone"></i> Call Us</a>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <i class="fas fa-chevron-down"></i>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-banner">
+  <div class="stat-item">
+    <div class="stat-num">32+</div>
+    <div class="stat-label">Menu Items</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">100%</div>
+    <div class="stat-label">Fresh Ingredients</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">3</div>
+    <div class="stat-label">Pizza Sizes</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">⭐ 4.8</div>
+    <div class="stat-label">Customer Rating</div>
+  </div>
+</div>
+
+<!-- WHY US -->
+<section id="why">
+  <div class="section-header reveal">
+    <span class="section-eyebrow">Why Choose Us</span>
+    <h2 class="section-title">The Pizzoo Difference</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="why-grid">
+    <div class="why-card reveal">
+      <div class="why-icon">🌾</div>
+      <h3>Authentic Italian Base</h3>
+      <p>Our pizza dough is made fresh daily using a traditional Italian recipe — light, crispy & perfectly chewy in every bite.</p>
+    </div>
+    <div class="why-card reveal">
+      <div class="why-icon">🧀</div>
+      <h3>Premium Quality Cheese</h3>
+      <p>Real mozzarella, no compromise. Generous portions of premium cheese that stretches perfectly with every bite.</p>
+    </div>
+    <div class="why-card reveal">
+      <div class="why-icon">🍅</div>
+      <h3>Fresh Ingredients Daily</h3>
+      <p>Vegetables, toppings and sauces are sourced fresh every day. No frozen shortcuts. Farm-to-pizza freshness in every slice.</p>
+    </div>
+    <div class="why-card reveal">
+      <div class="why-icon">🛵</div>
+      <h3>Fast Delivery</h3>
+      <p>Hot pizza delivered to your doorstep in Bhandup West. Order via WhatsApp or call us directly for quick service.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MENU -->
+<section id="menu">
+  <div class="section-header reveal">
+    <span class="section-eyebrow">Our Menu</span>
+    <h2 class="section-title">What We Serve</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="menu-tabs">
+    <button class="tab-btn active" onclick="switchTab('veg-pizza')">🍕 Veg Pizza</button>
+    <button class="tab-btn" onclick="switchTab('nonveg-pizza')">🍗 Non-Veg Pizza</button>
+    <button class="tab-btn" onclick="switchTab('burgers')">🍔 Burgers</button>
+    <button class="tab-btn" onclick="switchTab('fries')">🍟 Fries</button>
+    <button class="tab-btn" onclick="switchTab('momos')">🥟 Momos</button>
+    <button class="tab-btn" onclick="switchTab('more')">🥖 More</button>
+  </div>
+
+  <!-- VEG PIZZA TAB -->
+  <div class="menu-panel active" id="tab-veg-pizza">
+    <div class="size-tabs" style="margin-bottom:40px;">
+      <button class="size-tab active" onclick="switchSize(this,'reg')">Regular</button>
+      <button class="size-tab" onclick="switchSize(this,'med')">Medium</button>
+      <button class="size-tab" onclick="switchSize(this,'lrg')">Large</button>
+    </div>
+    <div class="pizza-grid" id="veg-grid"></div>
+  </div>
+
+  <!-- NON VEG PIZZA TAB -->
+  <div class="menu-panel" id="tab-nonveg-pizza">
+    <div class="size-tabs" style="margin-bottom:40px;">
+      <button class="size-tab active" onclick="switchSize(this,'nvreg')">Regular</button>
+      <button class="size-tab" onclick="switchSize(this,'nvmed')">Medium</button>
+      <button class="size-tab" onclick="switchSize(this,'nvlrg')">Large</button>
+    </div>
+    <div class="pizza-grid" id="nonveg-grid"></div>
+  </div>
+
+  <!-- BURGERS TAB -->
+  <div class="menu-panel" id="tab-burgers">
+    <div style="max-width:1100px; margin:0 auto;">
+      <div class="cat-section">
+        <div class="cat-header reveal">🥬 Veg Burgers</div>
+        <div class="extras-grid" id="veg-burger-grid"></div>
+      </div>
+      <div class="cat-section">
+        <div class="cat-header reveal">🍗 Non-Veg Burgers</div>
+        <div class="extras-grid" id="nonveg-burger-grid"></div>
+      </div>
+      <div class="cat-section">
+        <div class="cat-header reveal">🎉 Combos</div>
+        <div class="extras-grid" id="combo-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FRIES TAB -->
+  <div class="menu-panel" id="tab-fries">
+    <div style="max-width:1100px; margin:0 auto;">
+      <div class="cat-section">
+        <div class="cat-header reveal">🍟 Fries</div>
+        <div class="extras-grid" id="fries-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOMOS TAB -->
+  <div class="menu-panel" id="tab-momos">
+    <div class="momos-table-wrap">
+      <table class="momos-table">
+        <thead>
+          <tr>
+            <th style="text-align:left">Momos</th>
+            <th>Steamed</th>
+            <th>Fried</th>
+          </tr>
+        </thead>
+        <tbody id="momos-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MORE TAB (Garlic Bread, Nuggets, Samosa) -->
+  <div class="menu-panel" id="tab-more">
+    <div style="max-width:1100px; margin:0 auto;">
+      <div class="cat-section">
+        <div class="cat-header reveal">🥖 Garlic Bread</div>
+        <div class="extras-grid" id="garlic-grid"></div>
+      </div>
+      <div class="cat-section">
+        <div class="cat-header reveal">🍗 Nuggets & Snacks</div>
+        <div class="extras-grid" id="nuggets-grid"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-wrap">
+    <div class="about-img-wrap reveal">
+      <img src="https://images.unsplash.com/photo-1571997478779-2adcbbe9ab2f?w=700" alt="Pizza Making" class="about-img">
+      <div class="about-badge-float">
+        <div class="about-badge-num">100%</div>
+        <div class="about-badge-text">Fresh Dough<br>Daily</div>
+      </div>
+    </div>
+    <div class="about-text reveal">
+      <span class="section-eyebrow">Our Story</span>
+      <h2 class="section-title" style="text-align:left; margin-bottom:24px;">Crafting Pizza<br>the Right Way</h2>
+      <p>At Pizzoo, we believe great pizza starts with great dough. That's why we use 00 high-protein wheat flour — the gold standard in Italian pizza-making — to create a base that's crispy on the outside, pillowy inside, and full of character.</p>
+      <p>Located in the heart of Bhandup West, Mumbai, we serve authentic Italian-inspired pizzas with a menu that includes veg, non-veg, burgers, fries, momos, and more — all made fresh to order.</p>
+      <div class="about-features">
+        <div class="about-feature">
+          <div class="about-feature-icon"><i class="fas fa-wheat-awn"></i></div>
+          <div class="about-feature-text">00-grade flour from certified mills — higher protein for better gluten structure and authentic texture.</div>
+        </div>
+        <div class="about-feature">
+          <div class="about-feature-icon"><i class="fas fa-fire-flame-curved"></i></div>
+          <div class="about-feature-text">Hand-stretched dough baked at high temperature for the perfect leopard-spotted crust.</div>
+        </div>
+        <div class="about-feature">
+          <div class="about-feature-icon"><i class="fas fa-leaf"></i></div>
+          <div class="about-feature-text">No preservatives. No compromises. Fresh ingredients sourced daily from local markets.</div>
+        </div>
+        <div class="about-feature">
+          <div class="about-feature-icon"><i class="fas fa-award"></i></div>
+          <div class="about-feature-text">Available on Zomato & Swiggy. Also order directly on WhatsApp for faster service!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="section-header reveal">
+    <span class="section-eyebrow">Our Kitchen</span>
+    <h2 class="section-title">Fresh From The Oven</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="gallery-grid reveal">
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=700" alt="Pizza">
+      <div class="gallery-overlay"><div class="gallery-overlay-text">Artisan Craft</div></div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=700" alt="Pizza">
+      <div class="gallery-overlay"><div class="gallery-overlay-text">Fresh Toppings</div></div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1604908177453-7462950a6a3b?w=700" alt="Pizza">
+      <div class="gallery-overlay"><div class="gallery-overlay-text">Cheese Burst</div></div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=700" alt="Pizza">
+      <div class="gallery-overlay"><div class="gallery-overlay-text">Classic Crust</div></div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1548369937-47519962c11a?w=700" alt="Pizza">
+      <div class="gallery-overlay"><div class="gallery-overlay-text">Veg Supreme</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-header reveal">
+    <span class="section-eyebrow">Find Us</span>
+    <h2 class="section-title">Visit Pizzoo</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="contact-wrap">
+    <div class="contact-info reveal">
+      <h3>Come Hungry,<br>Leave Happy.</h3>
+      <div class="contact-item">
+        <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+        <div class="contact-text">
+          <label>Location</label>
+          <p>Bhandup West, Mumbai — 400078<br>Maharashtra, India</p>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon"><i class="fas fa-phone"></i></div>
+        <div class="contact-text">
+          <label>Call / WhatsApp</label>
+          <a href="tel:7738009029">7738009029</a><br>
+          <a href="tel:9870031740">9870031740</a>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon"><i class="fas fa-clock"></i></div>
+        <div class="contact-text">
+          <label>Hours</label>
+          <p>11:00 AM – 11:00 PM (Daily)</p>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon"><i class="fab fa-whatsapp"></i></div>
+        <div class="contact-text">
+          <label>Order Online</label>
+          <a href="https://wa.me/917738009029" target="_blank">Chat on WhatsApp</a>
+        </div>
+      </div>
+    </div>
+    <div class="contact-map-wrap reveal">
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15073.29609905782!2d72.93!3d19.15!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7b9aec3e04db1%3A0xb12697def2d70deb!2sBhandup%20West%2C%20Mumbai%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1700000000000" allowfullscreen loading="lazy"></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-wrap">
+    <div class="footer-brand">
+      <img src="logo.png" alt="Pizzoo" onerror="this.src='https://via.placeholder.com/160x70?text=PIZZOO'">
+      <p>"We use 00 High Protein for pizza base & premium quality cheese. No quality compromise at any cost."</p>
+    </div>
+    <div class="footer-links">
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#menu">Our Menu</a></li>
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-links">
+      <h4>Order</h4>
+      <ul>
+        <li><a href="https://wa.me/917738009029" target="_blank">WhatsApp Order</a></li>
+        <li><a href="tel:7738009029">Call: 7738009029</a></li>
+        <li><a href="tel:9870031740">Call: 9870031740</a></li>
+        <li><a href="#">Zomato</a></li>
+        <li><a href="#">Swiggy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2026 Pizzoo Pizza · Bhandup West, Mumbai</div>
+    <div class="footer-social">
+      <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/917738009029" class="social-btn"><i class="fab fa-whatsapp"></i></a>
+      <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+    </div>
+  </div>
+</footer>
+
+<!-- CART SIDEBAR -->
+<div class="cart-sidebar" id="cart-sidebar">
+  <div class="cart-header">
+    <h3>Your Basket</h3>
+    <button class="cart-close" onclick="toggleCart()">×</button>
+  </div>
+  <div class="cart-items" id="cart-items">
+    <div class="cart-empty">
+      <i class="fas fa-basket-shopping"></i>
+      <span>Your basket is empty</span>
+    </div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span class="cart-total-label">Total Bill</span>
+      <span class="cart-total-amount" id="cart-total">₹0</span>
+    </div>
+    <button class="checkout-btn" onclick="checkoutWhatsApp()">
+      <i class="fab fa-whatsapp" style="font-size:1.2rem"></i>
+      Send Order via WhatsApp
+    </button>
+  </div>
+</div>
+
+<!-- PIZZA MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal-box" id="modal-box">
+    <img id="modal-img" class="modal-img" src="" alt="">
+    <div class="modal-body">
+      <h2 class="modal-title" id="modal-title"></h2>
+      <span class="modal-badge" id="modal-badge"></span>
+      <div class="modal-section-title">About This Pizza</div>
+      <p class="modal-desc" id="modal-desc"></p>
+      <div class="modal-section-title">Ingredients</div>
+      <div class="ingredient-list" id="modal-ingredients"></div>
+      <div class="modal-section-title" id="modal-size-label">Choose Size & Add to Cart</div>
+      <div class="modal-size-btns" id="modal-sizes"></div>
+      <div class="modal-footer">
+        <button class="modal-add-btn" onclick="addFromModal()"><i class="fas fa-plus"></i> Add to Basket</button>
+        <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const vegPizzas = [
+  { name: "Margherita", reg:120, med:240, lrg:450,
+    img: "https://images.unsplash.com/photo-1574071318508-1cdbad80ad38?w=600",
+    desc: "A timeless classic — house-made tomato sauce, premium mozzarella on our signature 00 wheat crust. Simple, pure, perfect. The foundation of Italian pizza making.",
+    ingredients: ["00 Wheat Dough","San Marzano Tomato Sauce","Fresh Mozzarella","Fresh Basil","Olive Oil","Sea Salt"] },
+  { name: "Double Cheese Margherita", reg:180, med:350, lrg:570,
+    img: "https://images.unsplash.com/photo-1548365328-8c6db3220e4c?w=600",
+    desc: "Double the love! Our classic Margherita loaded with an extra generous helping of premium mozzarella for the ultimate cheese pull experience.",
+    ingredients: ["00 Wheat Dough","Tomato Sauce","Double Mozzarella","Parmesan","Basil","Olive Oil"] },
+  { name: "Onion Pizza", reg:140, med:280, lrg:470,
+    img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600",
+    desc: "Sweet caramelized onions layered over tangy tomato sauce and melted mozzarella. A surprisingly delicious combination that keeps you coming back.",
+    ingredients: ["00 Wheat Dough","Tomato Sauce","Mozzarella","Caramelized Onions","Oregano","Olive Oil"] },
+  { name: "Cheese Corn Pizza", reg:150, med:290, lrg:480,
+    img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600",
+    desc: "Sweet juicy corn kernels with a generous cheese blanket. A beloved Indian-Italian fusion that offers a delightful pop of sweetness with every bite.",
+    ingredients: ["00 Wheat Dough","Tomato Sauce","Mozzarella","Sweet Corn","Bell Peppers","Cheddar"] },
+  { name: "Veg Pizza", reg:170, med:330, lrg:500,
+    img: "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=600",
+    desc: "A garden on a pizza! Loaded with fresh vegetables including capsicum, onions, tomatoes and olives over our house tomato sauce and creamy mozzarella.",
+    ingredients: ["00 Wheat Dough","Tomato Sauce","Mozzarella","Capsicum","Onion","Tomato","Olives","Oregano"] },
+  { name: "Veg Hot & Spicy", reg:200, med:400, lrg:550,
+    img: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=600",
+    desc: "For the spice lovers! Fiery jalapeños, spicy sauce, and a medley of vegetables that create a flavor explosion. Warning: seriously spicy!",
+    ingredients: ["00 Wheat Dough","Spicy Tomato Sauce","Mozzarella","Jalapeños","Capsicum","Red Chilli Flakes","Onion"] },
+  { name: "Paneer Corn Pizza", reg:190, med:390, lrg:580,
+    img: "https://images.unsplash.com/photo-1544982503-9f984c14501a?w=600",
+    desc: "Tender paneer cubes paired with sweet corn and melted mozzarella. Rich, satisfying and full of texture — a crowd-pleaser for vegetarians.",
+    ingredients: ["00 Wheat Dough","Tomato Sauce","Mozzarella","Fresh Paneer","Sweet Corn","Capsicum","Coriander"] },
+  { name: "Peppy Paneer", reg:210, med:400, lrg:590,
+    img: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600",
+    desc: "Zesty marinated paneer with crunchy capsicum and tangy tomato sauce. Bold, spicy and deeply satisfying. A Pizzoo house favorite.",
+    ingredients: ["00 Wheat Dough","Tomato Sauce","Mozzarella","Marinated Paneer","Capsicum","Onion","Chilli Flakes"] },
+  { name: "Paneer Pizza", reg:220, med:420, lrg:600,
+    img: "https://images.unsplash.com/photo-1594007654729-407eedc4be65?w=600",
+    desc: "Classic paneer pizza with soft chunks of fresh cottage cheese, creamy sauce and melted mozzarella. Pure comfort food at its finest.",
+    ingredients: ["00 Wheat Dough","Cream Sauce","Mozzarella","Fresh Paneer","Onion","Herbs","Olive Oil"] },
+  { name: "Paneer Barbeque", reg:240, med:440, lrg:630,
+    img: "https://images.unsplash.com/photo-1510739859534-569cd28a670a?w=600",
+    desc: "Smoky BBQ sauce meets tender paneer in this irresistible combination. Sweet, smoky and slightly tangy — a guaranteed hit at every table.",
+    ingredients: ["00 Wheat Dough","BBQ Sauce","Mozzarella","BBQ Paneer","Onion","Capsicum","Smoked Paprika"] },
+  { name: "Paneer Indi Tandoori", reg:270, med:490, lrg:690,
+    img: "https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=600",
+    desc: "Indian tandoori flavors meet Italian pizza craft! Tandoori-spiced paneer, vibrant onions and capsicum on a tangy mint chutney base. Uniquely Pizzoo.",
+    ingredients: ["00 Wheat Dough","Mint Chutney","Mozzarella","Tandoori Paneer","Red Onion","Capsicum","Chaat Masala"] },
+  { name: "Veg Supreme", reg:250, med:480, lrg:680,
+    img: "https://images.unsplash.com/photo-1541745537411-b8046dc6d66c?w=600",
+    desc: "The ultimate vegetarian experience — every premium vegetable topping we have, piled high. Mushrooms, capsicum, olives, corn, onions and more.",
+    ingredients: ["00 Wheat Dough","Tomato Sauce","Mozzarella","Mushrooms","Capsicum","Olives","Corn","Onion","Tomato"] },
+  { name: "Extra Veggie", reg:250, med:480, lrg:650,
+    img: "https://images.unsplash.com/photo-1506354666786-959d6d497f1a?w=600",
+    desc: "A celebration of vegetables! Generously loaded with garden-fresh veggies that provide a satisfying crunch and natural sweetness in every bite.",
+    ingredients: ["00 Wheat Dough","Tomato Sauce","Mozzarella","Broccoli","Zucchini","Capsicum","Mushrooms","Spinach"] },
+  { name: "Farm House", reg:250, med:480, lrg:650,
+    img: "https://images.unsplash.com/photo-1528137871618-79d2761e3fd5?w=600",
+    desc: "Hearty and rustic — mushrooms, capsicum, onion and tomatoes on a classic Italian base. Like a meal straight from an Italian countryside kitchen.",
+    ingredients: ["00 Wheat Dough","Tomato Sauce","Mozzarella","Mushrooms","Capsicum","Onion","Tomato","Herbs"] },
+  { name: "Deluxe Paradise", reg:230, med:410, lrg:680,
+    img: "https://images.unsplash.com/photo-1458642849426-cfb724f15ef7?w=600",
+    desc: "A paradise of flavors! Our deluxe special combines premium toppings with extra cheese for a truly indulgent pizza experience worth every bite.",
+    ingredients: ["00 Wheat Dough","Special Sauce","Double Mozzarella","Capsicum","Olives","Mushrooms","Corn","Onion"] },
+  { name: "Mexican Green Wave", reg:220, med:400, lrg:600,
+    img: "https://images.unsplash.com/photo-1593246049226-ded77bf50328?w=600",
+    desc: "Mexican-inspired with Italian soul! Spicy jalapeños, fresh capsicum and a fiery green wave of flavors that will wake up your taste buds.",
+    ingredients: ["00 Wheat Dough","Green Chilli Sauce","Mozzarella","Jalapeños","Green Capsicum","Onion","Coriander"] },
+  { name: "Cheese Brust", reg:280, med:500, lrg:700,
+    img: "https://images.unsplash.com/photo-1585238342024-78d387f4a707?w=600",
+    desc: "The crown jewel of Pizzoo! A crust stuffed to the brim with molten mozzarella — one bite and the cheese literally bursts out. Absolutely unforgettable.",
+    ingredients: ["00 Wheat Dough","Cheese-Stuffed Crust","Tomato Sauce","Double Mozzarella","Choice of Toppings"] }
+];
+
+const nonvegPizzas = [
+  { name: "Chicken Pizza", reg:220, med:420, lrg:620,
+    img: "https://images.unsplash.com/photo-1594007654729-407eedc4be65?w=600",
+    desc: "Juicy chicken pieces over classic tomato sauce and premium mozzarella. The perfect gateway into our non-veg range.",
+    ingredients: ["00 Wheat Dough","Tomato Sauce","Mozzarella","Chicken Chunks","Capsicum","Oregano"] },
+  { name: "Simply Chicken Pizza", reg:200, med:400, lrg:590,
+    img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600",
+    desc: "Clean, simple, delicious. Tender chicken with classic flavors on our signature wheat crust. No frills, just great pizza.",
+    ingredients: ["00 Wheat Dough","Tomato Sauce","Mozzarella","Grilled Chicken","Salt","Herbs"] },
+  { name: "Chicken Delicious", reg:260, med:470, lrg:650,
+    img: "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=600",
+    desc: "A step up in every way — premium chicken with a medley of veggies and extra cheese. Aptly named because it truly is delicious!",
+    ingredients: ["00 Wheat Dough","Special Sauce","Mozzarella","Chicken","Capsicum","Onion","Mushrooms"] },
+  { name: "Chicken Tandoori", reg:280, med:520, lrg:720,
+    img: "https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=600",
+    desc: "Classic tandoori spices infused into our chicken topping — bold Indian flavors with Italian craftsmanship. A Pizzoo signature.",
+    ingredients: ["00 Wheat Dough","Mint-Coriander Base","Mozzarella","Tandoori Chicken","Red Onion","Capsicum","Chaat Masala"] },
+  { name: "Chicken Barbeque", reg:250, med:450, lrg:690,
+    img: "https://images.unsplash.com/photo-1510739859534-569cd28a670a?w=600",
+    desc: "Smoky BBQ-glazed chicken on a sweet BBQ sauce base. The combination of smokiness and sweetness makes this a perennial crowd favorite.",
+    ingredients: ["00 Wheat Dough","BBQ Sauce","Mozzarella","BBQ Chicken","Red Onion","Capsicum"] },
+  { name: "Chicken Salami", reg:280, med:470, lrg:630,
+    img: "https://images.unsplash.com/photo-1574071318508-1cdbad80ad38?w=600",
+    desc: "Premium chicken salami slices over classic mozzarella. Each slice brings a rich, savory depth that only cured meat can deliver.",
+    ingredients: ["00 Wheat Dough","Tomato Sauce","Mozzarella","Chicken Salami","Olives","Oregano"] },
+  { name: "Chicken Golden Delight", reg:260, med:500, lrg:640,
+    img: "https://images.unsplash.com/photo-1548365328-8c6db3220e4c?w=600",
+    desc: "Golden, glorious and absolutely delightful! Our special golden sauce with premium chicken creates an irresistible combination.",
+    ingredients: ["00 Wheat Dough","Golden Cream Sauce","Mozzarella","Chicken","Corn","Capsicum","Golden Spices"] },
+  { name: "Chicken Supreme", reg:320, med:510, lrg:780,
+    img: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=600",
+    desc: "The king of our non-veg range! Maximum toppings, maximum cheese, maximum chicken. For those who settle for nothing less than supreme.",
+    ingredients: ["00 Wheat Dough","Special Sauce","Double Mozzarella","Chicken","Capsicum","Mushrooms","Onion","Olives"] },
+  { name: "Chicken Sausage", reg:220, med:420, lrg:600,
+    img: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600",
+    desc: "Sliced chicken sausage with a classic Italian preparation. The sausage brings a hearty, meaty depth to our signature wheat crust.",
+    ingredients: ["00 Wheat Dough","Tomato Sauce","Mozzarella","Chicken Sausage","Capsicum","Oregano"] },
+  { name: "Sikh Kabab Pizza", reg:240, med:440, lrg:630,
+    img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600",
+    desc: "Mumbai street meets Italian kitchen! Seekh kabab crumbles over pizza — a unique fusion that works incredibly well and will surprise you.",
+    ingredients: ["00 Wheat Dough","Tomato Sauce","Mozzarella","Seekh Kabab","Onion","Green Chutney","Chaat Masala"] },
+  { name: "Chicken Maximus", reg:320, med:480, lrg:690,
+    img: "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=600",
+    desc: "Maximum everything! Our largest, most generous chicken pizza loaded with every premium ingredient. Truly a feast for champions.",
+    ingredients: ["00 Wheat Dough","Special Sauce","Double Mozzarella","Double Chicken","Capsicum","Mushrooms","Jalapeños"] },
+  { name: "Chicken Cheese Brust", reg:310, med:550, lrg:780,
+    img: "https://images.unsplash.com/photo-1585238342024-78d387f4a707?w=600",
+    desc: "Cheese burst crust packed with chicken! Molten cheese flows out of every bite of the crust while premium chicken tops it all off.",
+    ingredients: ["00 Wheat Dough","Cheese-Stuffed Crust","Tomato Sauce","Mozzarella","Chicken","Herbs"] },
+  { name: "Chicken Double Cheese", reg:290, med:500, lrg:690,
+    img: "https://images.unsplash.com/photo-1541745537411-b8046dc6d66c?w=600",
+    desc: "When one cheese isn't enough — double mozzarella with our premium chicken. Extra creamy, extra stretchy, extra delicious.",
+    ingredients: ["00 Wheat Dough","Tomato Sauce","Double Mozzarella","Parmesan","Chicken","Basil"] },
+  { name: "Spicy Chicken Pizza", reg:250, med:480, lrg:650,
+    img: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=600",
+    desc: "Not for the faint-hearted! Fiery spiced chicken with jalapeños and chilli flakes for a bold, heat-forward pizza that will thrill spice lovers.",
+    ingredients: ["00 Wheat Dough","Spicy Tomato Sauce","Mozzarella","Spiced Chicken","Jalapeños","Chilli Flakes"] },
+  { name: "4 Chicken Loaded Pizza", reg:350, med:550, lrg:810,
+    img: "https://images.unsplash.com/photo-1528137871618-79d2761e3fd5?w=600",
+    desc: "Loaded with FOUR types of chicken preparations! The ultimate non-veg extravaganza for serious pizza enthusiasts. Legendary status guaranteed.",
+    ingredients: ["00 Wheat Dough","Special Sauce","Mozzarella","Grilled Chicken","BBQ Chicken","Tandoori Chicken","Chicken Salami"] }
+];
+
+const vegBurgers = [
+  {name:"Tikki Burger", price:65, sub:"Crispy Aloo Tikki"},
+  {name:"Veg Burger", price:80, sub:"Classic Veggie"},
+  {name:"Veg Cheese", price:100, sub:"With Cheese Slice"},
+  {name:"Spicy Burger", price:90, sub:"Extra Chilli"},
+  {name:"Spicy Cheese", price:110, sub:"Spicy + Cheese"},
+  {name:"Paneer St. Che. Burger", price:150, sub:"Stuffed Cheese Paneer"}
+];
+const nonvegBurgers = [
+  {name:"Chi. Burger", price:100, sub:"Chicken Patty"},
+  {name:"Spicy Chi. Burger", price:110, sub:"Extra Spicy"},
+  {name:"Spicy Chi. Cheese Burger", price:130, sub:"Spicy + Cheese"},
+  {name:"Chi. Cheese", price:120, sub:"With Cheese Slice"},
+  {name:"Crispy Chicken", price:160, sub:"Crispy Fried"},
+  {name:"Crispy Cheese Chi.", price:180, sub:"Crispy + Cheese"},
+];
+const combos = [
+  {name:"Veg Burger Combo", price:145, sub:"Burger + Fries + Coke"},
+  {name:"Chi. Burger Combo", price:170, sub:"Burger + Fries + Coke"},
+  {name:"Double Cheese Add-On", price:40, sub:"Any Burger"}
+];
+const fries = [
+  {name:"Salted Fries", price:70, sub:"Classic"},
+  {name:"Peri Peri", price:90, sub:"Spicy"},
+  {name:"Chipotle Deep", price:130, sub:"Smoky"},
+  {name:"Tandoori Mayo", price:130, sub:"Indian Flavour"},
+  {name:"Cheese Fries", price:150, sub:"Loaded Cheese"},
+  {name:"Cheese with Chocolate", price:180, sub:"Sweet & Salty"}
+];
+const momosData = [
+  {name:"Veg", steam:80, fried:100},
+  {name:"Veg Schezwan", steam:90, fried:110},
+  {name:"Paneer", steam:110, fried:130},
+  {name:"Cheese Corn", steam:120, fried:140},
+  {name:"Chicken", steam:120, fried:140}
+];
+const garlicBread = [
+  {name:"Garlic Bread", price:120, sub:"Classic"},
+  {name:"Paneer Bread", price:150, sub:"With Paneer"},
+  {name:"Stuffed Bread", price:140, sub:"Stuffed"},
+  {name:"Spicy Stuffed", price:160, sub:"Extra Spicy"},
+  {name:"Cheese Deep (add-on)", price:20, sub:"Per bread"}
+];
+const nuggets = [
+  {name:"Veg Nuggets", price:120, sub:"Crispy Veg"},
+  {name:"Garlic Potato Pops", price:150, sub:"Garlicky"},
+  {name:"Cheesy Corn Triangles", price:140, sub:"Triangles"},
+  {name:"Chicken Nuggets", price:170, sub:"Juicy Chicken"},
+  {name:"Chicken Pop Corn", price:160, sub:"Bite-Sized"},
+  {name:"Veb Panjabi Samosa", price:20, sub:"Punjabi Style"}
+];
+
+// ===== CART =====
+let cart = [];
+let currentSizeKey = 'reg';
+let currentNvSizeKey = 'nvreg';
+let modalItem = null;
+let modalSelectedSize = null;
+
+// ===== RENDER =====
+function renderPizzaGrid(containerId, data, isVeg) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = data.map((p,i) => `
+    <div class="pizza-card" onclick="openModal(${isVeg ? 'vegPizzas' : 'nonvegPizzas'},${i})">
+      <div class="pizza-img-wrap">
+        <img class="pizza-card-img" src="${p.img}" alt="${p.name}" loading="lazy">
+        <span class="${isVeg ? 'veg-badge' : 'nonveg-badge'}">${isVeg ? '● VEG' : '● NON-VEG'}</span>
+      </div>
+      <div class="pizza-card-body">
+        <div class="pizza-card-name">${p.name}</div>
+        <div class="pizza-card-desc">${p.desc.substring(0,70)}...</div>
+        <div class="pizza-card-footer">
+          <div class="pizza-price">
+            ₹<span class="price-val-${i}">${isVeg ? p.reg : p.reg}</span>
+            <small>${isVeg ? 'Regular' : 'Regular'}</small>
+          </div>
+          <button class="add-btn" onclick="event.stopPropagation(); openModal(${isVeg ? 'vegPizzas' : 'nonvegPizzas'},${i})">VIEW +</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderExtrasGrid(containerId, items, isVeg) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = items.map((item,i) => `
+    <div class="extras-card" onclick="addToCart('${item.name}', ${item.price}, '${isVeg===true ? 'Veg':''}')">
+      <div>
+        <div class="extras-name">${item.name}</div>
+        <div class="extras-sub">${item.sub}</div>
+      </div>
+      <div>
+        <div class="extras-price">₹${item.price}</div>
+        <button class="add-btn" style="margin-top:6px;font-size:10px;padding:5px 10px;">ADD</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderMomosTable() {
+  const tbody = document.getElementById('momos-body');
+  tbody.innerHTML = momosData.map(m => `
+    <tr>
+      <td>${m.name}</td>
+      <td><button class="add-btn" style="font-size:11px" onclick="addToCart('${m.name} Momos (Steamed)', ${m.steam})">₹${m.steam} ADD</button></td>
+      <td><button class="add-btn" style="font-size:11px" onclick="addToCart('${m.name} Momos (Fried)', ${m.fried})">₹${m.fried} ADD</button></td>
+    </tr>
+  `).join('');
+}
+
+// ===== TABS =====
+function switchTab(tabId) {
+  document.querySelectorAll('.menu-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  event.target.classList.add('active');
+}
+
+const sizeMap = { reg:'reg', med:'med', lrg:'lrg', nvreg:'reg', nvmed:'med', nvlrg:'lrg' };
+function switchSize(btn, key) {
+  btn.closest('.size-tabs').querySelectorAll('.size-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const isVeg = ['reg','med','lrg'].includes(key);
+  if(isVeg) {
+    currentSizeKey = key;
+    renderPizzaGrid('veg-grid', vegPizzas, true);
+  } else {
+    currentNvSizeKey = key;
+    renderPizzaGrid('nonveg-grid', nonvegPizzas, false);
+  }
+}
+
+// ===== MODAL =====
+function openModal(datasetStr, idx) {
+  const dataset = datasetStr === 'vegPizzas' ? vegPizzas : nonvegPizzas;
+  const isVeg = datasetStr === 'vegPizzas';
+  const p = dataset[idx];
+  modalItem = { ...p, isVeg };
+  modalSelectedSize = { label: 'Regular', price: p.reg };
+
+  document.getElementById('modal-img').src = p.img;
+  document.getElementById('modal-title').textContent = p.name;
+  const badge = document.getElementById('modal-badge');
+  badge.textContent = isVeg ? '🟢 Pure Veg' : '🔴 Non-Veg';
+  badge.className = 'modal-badge ' + (isVeg ? 'veg' : 'nonveg');
+  document.getElementById('modal-desc').textContent = p.desc;
+
+  document.getElementById('modal-ingredients').innerHTML = p.ingredients.map(i =>
+    `<span class="ingredient-chip">${i}</span>`).join('');
+
+  const sizes = [
+    {label:'Regular', price: p.reg},
+    {label:'Medium', price: p.med},
+    {label:'Large', price: p.lrg}
+  ];
+  document.getElementById('modal-sizes').innerHTML = sizes.map((s,i) => `
+    <div class="modal-size-btn ${i===0?'selected':''}" onclick="selectSize(this,'${s.label}',${s.price})">
+      <span class="modal-size-label">${s.label}</span>
+      <span class="modal-size-price">₹${s.price}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function selectSize(el, label, price) {
+  document.querySelectorAll('.modal-size-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  modalSelectedSize = {label, price};
+}
+
+function addFromModal() {
+  if(!modalItem || !modalSelectedSize) return;
+  addToCart(`${modalItem.name} (${modalSelectedSize.label})`, modalSelectedSize.price);
+  closeModal();
+  toggleCart();
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeModalOutside(e) {
+  if(e.target === document.getElementById('modal')) closeModal();
+}
+
+// ===== CART =====
+function addToCart(name, price, tag) {
+  cart.push({name: tag ? name : name, price});
+  updateCartUI();
+
+  // Flash cart icon
+  const btn = document.querySelector('.cart-btn');
+  btn.style.transform = 'scale(1.3)';
+  setTimeout(() => btn.style.transform = '', 300);
+}
+
+function removeFromCart(idx) {
+  cart.splice(idx, 1);
+  updateCartUI();
+}
+
+function updateCartUI() {
+  document.getElementById('cart-count').textContent = cart.length;
+  const total = cart.reduce((s,i) => s + i.price, 0);
+  document.getElementById('cart-total').textContent = `₹${total}`;
+
+  const container = document.getElementById('cart-items');
+  if(cart.length === 0) {
+    container.innerHTML = `<div class="cart-empty"><i class="fas fa-basket-shopping"></i><span>Your basket is empty</span></div>`;
+    return;
+  }
+  container.innerHTML = cart.map((item,i) => `
+    <div class="cart-item">
+      <div>
+        <div class="cart-item-name">${item.name}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="cart-item-price">₹${item.price}</div>
+        <button class="cart-item-remove" onclick="removeFromCart(${i})"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleCart() {
+  document.getElementById('cart-sidebar').classList.toggle('open');
+}
+
+function checkoutWhatsApp() {
+  if(cart.length === 0) { alert("Add some items first!"); return; }
+  const phone = "917738009029";
+  const total = cart.reduce((s,i) => s + i.price, 0);
+  let msg = "🍕 *NEW ORDER - PIZZOO*%0A" + "═".repeat(26) + "%0A";
+  cart.forEach((item,i) => {
+    msg += `*${i+1}.* ${item.name} — ₹${item.price}%0A`;
+  });
+  msg += "═".repeat(26) + "%0A*TOTAL: ₹" + total + "*%0A%0APlease confirm my order!";
+  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+}
+
+// ===== MOBILE NAV =====
+function toggleMobileNav() {
+  document.getElementById('navbar').classList.toggle('mobile-open');
+}
+
+// ===== INTRO DISMISS =====
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('intro-screen').classList.add('hide');
+  }, 6000);
+});
+
+// ===== SCROLL REVEAL =====
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ===== INIT =====
+renderPizzaGrid('veg-grid', vegPizzas, true);
+renderPizzaGrid('nonveg-grid', nonvegPizzas, false);
+renderExtrasGrid('veg-burger-grid', vegBurgers, true);
+renderExtrasGrid('nonveg-burger-grid', nonvegBurgers, false);
+renderExtrasGrid('combo-grid', combos, null);
+renderExtrasGrid('fries-grid', fries, null);
+renderMomosTable();
+renderExtrasGrid('garlic-grid', garlicBread, null);
+renderExtrasGrid('nuggets-grid', nuggets, null);
+
+// Re-observe after render
+setTimeout(() => {
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+}, 100);
+</script>
+</body>
+</html>

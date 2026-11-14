@@ -1,0 +1,93 @@
+import React from 'react';
+import { MapPin, Phone, Clock, MessageCircle } from 'lucide-react';
+
+export const ContactSection = () => {
+  return (
+    <section id="contact" className="py-24 px-4 bg-[#1A0E00]">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-12">
+          <span className="font-sans text-xs tracking-[0.35em] text-trattoria-gold uppercase block mb-2">
+            WHERE TO FIND US
+          </span>
+          <h2 className="font-serif text-4xl font-black text-white">
+            Visit Our Pizzeria
+          </h2>
+          <div className="w-16 h-1 bg-trattoria-gold mx-auto mt-4 rounded-full" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Info Details */}
+          <div className="space-y-6">
+            <h3 className="font-serif text-3xl font-black text-white">
+              Pizzoo Italian Pizzeria & Kitchen
+            </h3>
+
+            <div className="space-y-4">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-trattoria-gold/10 border border-trattoria-gold/30 rounded-xl text-trattoria-gold">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="font-sans text-[10px] tracking-widest text-trattoria-gold uppercase block">ADDRESS</span>
+                  <p className="text-sm text-white/80 font-body mt-0.5">
+                    Bhandup West, Mumbai — 400078, Maharashtra, India
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-trattoria-gold/10 border border-trattoria-gold/30 rounded-xl text-trattoria-gold">
+                  <Phone className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="font-sans text-[10px] tracking-widest text-trattoria-gold uppercase block">PHONE (CALL TO ORDER)</span>
+                  <a href="tel:7738009029" className="text-sm text-white/90 font-bold hover:text-trattoria-gold transition-colors block">
+                    7738009029
+                  </a>
+                  <a href="tel:9870031740" className="text-sm text-white/90 font-bold hover:text-trattoria-gold transition-colors block">
+                    9870031740
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-trattoria-gold/10 border border-trattoria-gold/30 rounded-xl text-trattoria-gold">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="font-sans text-[10px] tracking-widest text-trattoria-gold uppercase block">OPENING HOURS</span>
+                  <p className="text-sm text-white/80 font-body mt-0.5">
+                    11:00 AM – 11:00 PM (Everyday)
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-emerald-950/60 border border-emerald-500/40 rounded-xl text-emerald-400">
+                  <MessageCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="font-sans text-[10px] tracking-widest text-emerald-400 uppercase block">WHATSAPP DIRECT ORDER</span>
+                  <a href="https://wa.me/917738009029" target="_blank" rel="noreferrer" className="text-sm text-emerald-300 font-bold hover:underline">
+                    Chat on WhatsApp (917738009029)
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Map Embed */}
+          <div className="rounded-3xl overflow-hidden border border-trattoria-gold/20 shadow-2xl h-[360px]">
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15073.29609905782!2d72.93!3d19.15!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7b9aec3e04db1%3A0xb12697def2d70deb!2sBhandup%20West%2C%20Mumbai%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1700000000000" 
+              className="w-full h-full border-0 filter invert opacity-90"
+              allowFullScreen="" 
+              loading="lazy" 
+              title="Pizzoo Pizzeria Location Map"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};

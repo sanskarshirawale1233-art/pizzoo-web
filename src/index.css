@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Lato', sans-serif;
+  }
+
+  body {
+    background-color: #0D0700;
+    color: #FFFFFF;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom scrollbars & animations */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0D0700;
+}
+::-webkit-scrollbar-thumb {
+  background: #3D1F00;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #F0A500;
+}
+
+@keyframes steamRise {
+  0%   { opacity: 0; transform: translateY(0) scaleX(1); }
+  30%  { opacity: 0.8; }
+  100% { opacity: 0; transform: translateY(-50px) scaleX(0.3); }
+}
+
+@keyframes pizzaSlideOut {
+  0%   { transform: translateX(-50%) translateX(-200px) scale(0.4); opacity: 0; }
+  20%  { opacity: 1; }
+  60%  { transform: translateX(-50%) translateX(0px) scale(1.08); opacity: 1; }
+  80%  { transform: translateX(-50%) translateX(6px) scale(1.04); }
+  100% { transform: translateX(-50%) translateX(0px) scale(1); opacity: 1; }
+}
+
+@keyframes fireflicker2 {
+  from { opacity: 0.25; transform: scaleX(0.92); }
+  to   { opacity: 0.45; transform: scaleX(1.08); }
+}
+
+.steam-line {
+  position: absolute;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(to top, rgba(255, 160, 60, 0.5), transparent);
+  animation: steamRise 1.2s ease-in-out infinite;
+  opacity: 0;
+}
+
+.animate-fire {
+  animation: fireflicker2 0.3s infinite alternate;
+}
