@@ -1,24 +1,55 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { INITIAL_MENU_ITEMS } from '../data/initialMenuItems';
 
 const MenuContext = createContext(null);
+const LOCAL_STORAGE_KEY = 'pizzoo_menu_items';
 
 export const MenuProvider = ({ children }) => {
-  const [menuItems, setMenuItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Initialize from localStorage or fallback to seeded INITIAL_MENU_ITEMS
+  const [menuItems, setMenuItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse localStorage menu:', e);
+    }
+    return INITIAL_MENU_ITEMS;
+  });
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch initial menu items from API
+  // Helper to persist to localStorage
+  const saveToLocal = (items) => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
+    } catch (e) {
+      console.warn('Failed to save menu to localStorage:', e);
+    }
+  };
+
+  // Fetch menu items from API (if backend is available, e.g. localhost)
   const fetchMenu = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch('/api/menu');
-      if (!res.ok) throw new Error('Failed to fetch menu');
-      const data = await res.json();
-      setMenuItems(data);
-      setError(null);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setMenuItems(data);
+          saveToLocal(data);
+          setError(null);
+          return;
+        }
+      }
     } catch (err) {
-      console.error('Error loading menu from DB:', err);
-      setError(err.message);
+      // Backend not running (Vercel static deploy or offline) - safe fallback
+      console.log('Running in client/static mode. Using local/cached menu items.');
     } finally {
       setLoading(false);
     }
@@ -27,7 +58,7 @@ export const MenuProvider = ({ children }) => {
   useEffect(() => {
     fetchMenu();
 
-    // Subscribe to Real-Time SSE Events
+    // Subscribe to Real-Time SSE Events if server exists
     let eventSource;
     try {
       eventSource = new EventSource('/api/events');
@@ -43,11 +74,12 @@ export const MenuProvider = ({ children }) => {
         }
       };
 
-      eventSource.onerror = (err) => {
-        console.warn('SSE connection error in MenuContext, fallback polling active.');
+      eventSource.onerror = () => {
+        // SSE disconnected / static mode - close gracefully
+        if (eventSource) eventSource.close();
       };
     } catch (e) {
-      console.warn('SSE not supported or error:', e);
+      // SSE not available
     }
 
     return () => {
@@ -57,77 +89,111 @@ export const MenuProvider = ({ children }) => {
 
   // 1. Add Item
   const addMenuItem = async (itemData) => {
+    const newItem = {
+      ...itemData,
+      id: itemData.id || `item-${Date.now()}`,
+      created_at: new Date().toISOString()
+    };
+
+    setMenuItems(prev => {
+      const updated = [newItem, ...prev];
+      saveToLocal(updated);
+      return updated;
+    });
+
+    // Try API if available
     try {
-      const res = await fetch('/api/menu', {
+      await fetch('/api/menu', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(itemData)
+        body: JSON.stringify(newItem)
       });
-      if (!res.ok) throw new Error('Failed to create menu item');
-      const newItem = await res.json();
-      await fetchMenu();
-      return newItem;
     } catch (err) {
-      console.error('Error adding menu item:', err);
-      throw err;
+      console.log('Item saved locally in browser storage.');
     }
+
+    return newItem;
   };
 
   // 2. Update Item
   const updateMenuItem = async (id, itemData) => {
+    let updatedItem = null;
+    setMenuItems(prev => {
+      const updated = prev.map(item => {
+        if (item.id === id) {
+          updatedItem = { ...item, ...itemData };
+          return updatedItem;
+        }
+        return item;
+      });
+      saveToLocal(updated);
+      return updated;
+    });
+
     try {
-      const res = await fetch(`/api/menu/${id}`, {
+      await fetch(`/api/menu/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(itemData)
       });
-      if (!res.ok) throw new Error('Failed to update menu item');
-      const updated = await res.json();
-      await fetchMenu();
-      return updated;
     } catch (err) {
-      console.error('Error updating menu item:', err);
-      throw err;
+      console.log('Item updated locally in browser storage.');
     }
+
+    return updatedItem;
   };
 
   // 3. Toggle Availability (Sold Out state)
   const toggleAvailability = async (id, isAvailable) => {
+    setMenuItems(prev => {
+      const updated = prev.map(item => 
+        item.id === id ? { ...item, is_available: isAvailable ? 1 : 0 } : item
+      );
+      saveToLocal(updated);
+      return updated;
+    });
+
     try {
-      const res = await fetch(`/api/menu/${id}/availability`, {
+      await fetch(`/api/menu/${id}/availability`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_available: isAvailable })
       });
-      if (!res.ok) throw new Error('Failed to update availability');
-      await fetchMenu();
     } catch (err) {
-      console.error('Error toggling availability:', err);
-      throw err;
+      console.log('Availability toggled locally.');
     }
   };
 
   // 4. Delete Item
   const deleteMenuItem = async (id) => {
+    setMenuItems(prev => {
+      const updated = prev.filter(item => item.id !== id);
+      saveToLocal(updated);
+      return updated;
+    });
+
     try {
-      const res = await fetch(`/api/menu/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete item');
-      await fetchMenu();
+      await fetch(`/api/menu/${id}`, { method: 'DELETE' });
     } catch (err) {
-      console.error('Error deleting menu item:', err);
-      throw err;
+      console.log('Item deleted locally.');
     }
   };
 
-  // 5. Clear All Custom Added Menu Items
+  // 5. Reset to Default Uploaded Pizzas
+  const resetToDefaultMenu = () => {
+    setMenuItems(INITIAL_MENU_ITEMS);
+    saveToLocal(INITIAL_MENU_ITEMS);
+  };
+
+  // 6. Clear All Custom Added Menu Items
   const clearAllMenuItems = async () => {
+    setMenuItems([]);
+    saveToLocal([]);
+
     try {
-      const res = await fetch('/api/menu/clear-all', { method: 'POST' });
-      if (!res.ok) throw new Error('Failed to clear menu items');
-      await fetchMenu();
+      await fetch('/api/menu/clear-all', { method: 'POST' });
     } catch (err) {
-      console.error('Error clearing all menu items:', err);
-      throw err;
+      console.log('Cleared locally.');
     }
   };
 
@@ -163,7 +229,9 @@ export const MenuProvider = ({ children }) => {
     addMenuItem,
     updateMenuItem,
     toggleAvailability,
-    deleteMenuItem
+    deleteMenuItem,
+    resetToDefaultMenu,
+    clearAllMenuItems
   };
 
   return <MenuContext.Provider value={value}>{children}</MenuContext.Provider>;

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 
 export const AdminMenuManager = () => {
-  const { menuItems, addMenuItem, updateMenuItem, toggleAvailability, deleteMenuItem, loading } = useMenu();
+  const { menuItems, addMenuItem, updateMenuItem, toggleAvailability, deleteMenuItem, resetToDefaultMenu, loading } = useMenu();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
@@ -84,16 +84,50 @@ export const AdminMenuManager = () => {
       const fileData = new FormData();
       fileData.append('image', file);
 
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: fileData
-      });
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: fileData
+        });
 
-      if (!res.ok) throw new Error('Failed to upload image');
-      const data = await res.json();
-      setFormData(prev => ({ ...prev, image_url: data.imageUrl }));
+        if (res.ok) {
+          const data = await res.json();
+          if (data.imageUrl) {
+            setFormData(prev => ({ ...prev, image_url: data.imageUrl }));
+            return;
+          }
+        }
+      } catch (netErr) {
+        // Backend upload not available (static host / Vercel), fall through to canvas compression
+      }
+
+      // Client-side HTML5 Canvas Image Compression Fallback (Max 600px width, 75% JPEG quality)
+      const reader = new FileReader();
+      reader.onload = (readerEvent) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 600;
+          let width = img.width;
+          let height = img.height;
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75);
+          setFormData(prev => ({ ...prev, image_url: compressedDataUrl }));
+        };
+        img.src = readerEvent.target.result;
+      };
+      reader.readAsDataURL(file);
+
     } catch (err) {
-      alert('Error uploading photo: ' + err.message);
+      console.error('Error uploading photo:', err);
+      alert('Error processing photo: ' + err.message);
     } finally {
       setUploadingImage(false);
     }
@@ -175,13 +209,28 @@ export const AdminMenuManager = () => {
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAddModal}
-          className="bg-trattoria-red hover:bg-trattoria-redHover text-white px-5 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Menu Item</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => {
+              if (window.confirm("Reload the original pizzas with their uploaded photos and sizes?")) {
+                resetToDefaultMenu();
+                alert("Menu reset to all 9 uploaded pizzas!");
+              }
+            }}
+            className="bg-white hover:bg-stone-100 text-stone-800 px-4 py-3 rounded-2xl text-xs font-bold border border-stone-300 shadow-sm flex items-center gap-1.5 transition-all"
+            title="Reload uploaded pizzas"
+          >
+            <span>🔄 Reload Uploaded Pizzas</span>
+          </button>
+
+          <button
+            onClick={handleOpenAddModal}
+            className="bg-trattoria-red hover:bg-trattoria-redHover text-white px-5 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add New Menu Item</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter & Search Bar */}
