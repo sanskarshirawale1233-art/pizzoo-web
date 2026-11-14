@@ -39,10 +39,10 @@ export const Navbar = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 h-[70px] bg-[#0A0602]/95 backdrop-blur-md border-b border-trattoria-gold/20 px-4 md:px-8 flex items-center justify-between">
         {/* Brand Logo & Tagline */}
         <a href="/#home" className="flex items-center gap-3 group">
-          <img 
-            src="/logo.png" 
-            alt="Pizzoo Logo" 
-            className="h-11 object-contain filter drop-shadow-[0_0_12px_rgba(240,165,0,0.4)] group-hover:scale-105 transition-transform" 
+          <img
+            src="/logo.png"
+            alt="Pizzoo Logo"
+            className="h-11 object-contain filter drop-shadow-[0_0_12px_rgba(240,165,0,0.4)] group-hover:scale-105 transition-transform"
             onError={(e) => { e.target.style.display = 'none'; }}
           />
           <div>
@@ -90,11 +90,11 @@ export const Navbar = () => {
         {/* Actions */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           {/* Prominent Manage / Add Menu Button (Opens PIN Modal) */}
-          <button 
+          <button
             type="button"
             onClick={handleOpenPinModal}
             className="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-trattoria-gold border border-trattoria-gold/40 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full font-sans text-xs tracking-wider uppercase font-bold transition-all shadow-sm hover:scale-105"
-            title="Add / Manage Menu (Password: 0909)"
+            title="Add / Manage Menu"
           >
             <span>👑</span>
             <span className="hidden sm:inline">Add / Manage Menu</span>
@@ -102,8 +102,8 @@ export const Navbar = () => {
           </button>
 
           {/* Call-to-Order Telephone Link */}
-          <a 
-            href="tel:7738009029" 
+          <a
+            href="tel:7738009029"
             className="hidden lg:flex items-center gap-2 bg-gradient-to-r from-trattoria-red to-trattoria-terracotta text-white px-4 py-2 rounded-full font-sans text-xs tracking-wider uppercase font-semibold hover:shadow-red-glow transition-all transform hover:-translate-y-0.5"
           >
             <Phone className="w-3.5 h-3.5" />
@@ -111,7 +111,7 @@ export const Navbar = () => {
           </a>
 
           {/* Cart Drawer Trigger */}
-          <button 
+          <button
             onClick={() => setIsCartOpen(true)}
             className="relative p-2.5 bg-trattoria-wood/80 border border-trattoria-gold/30 text-white rounded-full hover:border-trattoria-gold transition-all"
           >
@@ -124,7 +124,7 @@ export const Navbar = () => {
           </button>
 
           {/* Mobile Hamburger Toggle */}
-          <button 
+          <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden p-2 text-white hover:text-trattoria-gold"
           >
@@ -142,13 +142,13 @@ export const Navbar = () => {
               </div>
             )}
 
-            <button 
+            <button
               type="button"
               onClick={handleOpenPinModal}
               className="flex items-center gap-2 text-trattoria-gold font-bold p-3 bg-trattoria-gold/15 rounded-xl border border-trattoria-gold/30 text-left"
             >
               <span>👑</span>
-              <span>Add / Manage Menu Items (PIN: 0909)</span>
+              <span>Add / Manage Menu Items</span>
             </button>
 
             <a href="/#home" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-trattoria-gold py-1">
@@ -164,8 +164,8 @@ export const Navbar = () => {
               Contact
             </a>
 
-            <a 
-              href="tel:7738009029" 
+            <a
+              href="tel:7738009029"
               className="flex items-center justify-center gap-2 bg-trattoria-red text-white py-3 rounded-xl font-bold mt-2"
             >
               <Phone className="w-4 h-4" />
@@ -179,7 +179,7 @@ export const Navbar = () => {
       {isPinModalOpen && (
         <div className="fixed inset-0 z-[2000] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
           <div className="bg-[#120B05] border border-trattoria-gold/30 rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl relative text-white">
-            <button 
+            <button
               onClick={() => setIsPinModalOpen(false)}
               className="absolute top-4 right-4 text-white/40 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
             >
@@ -193,10 +193,7 @@ export const Navbar = () => {
             <span className="font-sans text-xs tracking-widest text-trattoria-gold font-bold uppercase block mb-1">
               👑 Owner Menu Access
             </span>
-            <h3 className="font-serif text-2xl font-black text-white">Enter Owner PIN</h3>
-            <p className="text-xs text-white/60 mt-1 mb-6 font-body">
-              Enter 4-digit PIN to add & manage pizzas or view revenue (PIN: <strong>0909</strong>)
-            </p>
+            <h3 className="font-serif text-2xl font-black text-white mb-6">Enter Owner PIN</h3>
 
             <form onSubmit={handlePinSubmit} className="space-y-4">
               <div className="relative">
@@ -214,11 +211,11 @@ export const Navbar = () => {
 
               {pinError && (
                 <p className="text-xs text-red-400 font-sans font-bold animate-shake">
-                  Incorrect PIN! Please enter <strong>0909</strong>.
+                  Incorrect PIN! Please try again.
                 </p>
               )}
 
-              <button 
+              <button
                 type="submit"
                 className="w-full bg-trattoria-red hover:bg-trattoria-redHover text-white py-3.5 rounded-xl font-sans text-xs uppercase tracking-widest font-bold shadow-lg transition-all active:scale-98"
               >
