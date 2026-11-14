@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { getSupabase } from '../lib/supabase';
 import { INITIAL_MENU_ITEMS } from '../data/initialMenuItems';
 
 const MenuContext = createContext(null);
+const LOCAL_STORAGE_KEY = 'pizzoo_menu_items';
 
 const normalizeMenuItem = (item) => {
   let ingredients = item.ingredients;
@@ -25,6 +26,7 @@ const normalizeMenuItem = (item) => {
 
   return {
     ...item,
+    id: String(item.id),
     ingredients: Array.isArray(ingredients) ? ingredients : [],
     tags: Array.isArray(tags) ? tags : [],
     is_veg: item.is_veg === true || item.is_veg === 1 || item.is_veg === '1',
@@ -32,88 +34,153 @@ const normalizeMenuItem = (item) => {
   };
 };
 
+const prepareForSupabase = (item) => ({
+  id: String(item.id),
+  name: String(item.name || ''),
+  italian_title: item.italian_title || '',
+  category: String(item.category || 'Veg Pizzas / Classic Veg'),
+  price_reg: Number(item.price_reg) || 0,
+  price_med: Number(item.price_med) || 0,
+  price_lrg: Number(item.price_lrg) || 0,
+  description: item.description || '',
+  image_url: item.image_url || '',
+  ingredients: Array.isArray(item.ingredients) ? item.ingredients : [],
+  tags: Array.isArray(item.tags) ? item.tags : [],
+  is_veg: item.is_veg ? 1 : 0,
+  is_available: item.is_available ? 1 : 0,
+  created_at: item.created_at || new Date().toISOString()
+});
+
+const saveToLocal = (items) => {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
+  } catch (e) {
+    console.warn('Failed to save to localStorage:', e);
+  }
+};
+
 export const MenuProvider = ({ children }) => {
-  const [menuItems, setMenuItems] = useState(INITIAL_MENU_ITEMS);
+  // 1. Initial State: Always load from localStorage immediately to prevent wipeouts on refresh
+  const [menuItems, setMenuItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(normalizeMenuItem);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse localStorage menu:', e);
+    }
+    return INITIAL_MENU_ITEMS;
+  });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Live Supabase Fetch
+  // 2. Live Supabase Fetch & Sync
   const fetchMenu = useCallback(async () => {
     try {
       setLoading(true);
+      const sb = getSupabase();
 
-      if (supabase) {
-        const { data, error: supaErr } = await supabase
+      if (sb) {
+        const { data, error: supaErr } = await sb
           .from('menu_items')
           .select('*')
           .order('created_at', { ascending: false });
 
         if (!supaErr && Array.isArray(data)) {
           if (data.length > 0) {
-            setMenuItems(data.map(normalizeMenuItem));
+            const normalized = data.map(normalizeMenuItem);
+            setMenuItems(normalized);
+            saveToLocal(normalized);
             setError(null);
             return;
           } else {
-            // First time setup: auto-seed initial pizzas into Supabase
+            // First time setup on empty Supabase table: seed current items
             try {
-              await supabase.from('menu_items').upsert(INITIAL_MENU_ITEMS);
+              const current = (menuItems && menuItems.length > 0) ? menuItems : INITIAL_MENU_ITEMS;
+              await sb.from('menu_items').upsert(current.map(prepareForSupabase));
             } catch (seedErr) {
               console.warn('Auto-seed error:', seedErr);
             }
-            setMenuItems(INITIAL_MENU_ITEMS);
-            setError(null);
-            return;
           }
         } else if (supaErr) {
-          console.warn('Supabase fetch error, fallback to initial items:', supaErr);
+          console.warn('Supabase fetch error:', supaErr.message || supaErr);
         }
       }
 
-      // Fallback to local API if running with express
+      // Check localStorage fallback so user changes are never deleted on refresh
       try {
-        const res = await fetch('/api/menu');
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setMenuItems(data.map(normalizeMenuItem));
-            setError(null);
+        const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setMenuItems(parsed.map(normalizeMenuItem));
             return;
           }
         }
-      } catch {
-        // Express not running
-      }
+      } catch {}
 
+      // Final default fallback
       setMenuItems(INITIAL_MENU_ITEMS);
+      saveToLocal(INITIAL_MENU_ITEMS);
     } catch (err) {
       console.warn('Menu fetch error:', err);
-      setMenuItems(INITIAL_MENU_ITEMS);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [menuItems]);
 
   useEffect(() => {
     fetchMenu();
 
     // Supabase Real-time Sync across all open browsers/devices
-    if (supabase) {
-      const channel = supabase
-        .channel('menu_items_sync')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'menu_items' },
-          () => {
-            fetchMenu();
-          }
-        )
-        .subscribe();
+    const sb = getSupabase();
+    if (sb) {
+      try {
+        const channel = sb
+          .channel('menu_items_live_sync')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'menu_items' },
+            () => {
+              fetchMenu();
+            }
+          )
+          .subscribe();
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
+        return () => {
+          sb.removeChannel(channel);
+        };
+      } catch {}
     }
   }, [fetchMenu]);
+
+  // Push all local items to Supabase (manual trigger / bulk sync)
+  const syncAllToSupabase = async () => {
+    const sb = getSupabase();
+    if (!sb) {
+      return { success: false, error: 'Supabase client not configured' };
+    }
+
+    try {
+      const itemsToSync = (menuItems && menuItems.length > 0) ? menuItems : INITIAL_MENU_ITEMS;
+      const { error: supaErr } = await sb
+        .from('menu_items')
+        .upsert(itemsToSync.map(prepareForSupabase));
+
+      if (supaErr) {
+        return { success: false, error: supaErr.message || JSON.stringify(supaErr) };
+      }
+
+      return { success: true, count: itemsToSync.length };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  };
 
   // 1. Add Item
   const addMenuItem = async (itemData) => {
@@ -123,24 +190,24 @@ export const MenuProvider = ({ children }) => {
       created_at: new Date().toISOString()
     });
 
-    setMenuItems(prev => [newItem, ...prev]);
+    setMenuItems(prev => {
+      const updated = [newItem, ...prev.filter(i => i.id !== newItem.id)];
+      saveToLocal(updated);
+      return updated;
+    });
 
-    if (supabase) {
-      const { error: supaErr } = await supabase.from('menu_items').insert([newItem]);
-      if (supaErr) {
-        console.error('Supabase addMenuItem error:', supaErr);
-        // Retry with upsert
-        await supabase.from('menu_items').upsert([newItem]);
+    const sb = getSupabase();
+    if (sb) {
+      try {
+        const payload = prepareForSupabase(newItem);
+        const { error: supaErr } = await sb.from('menu_items').upsert([payload]);
+        if (supaErr) {
+          console.warn('Supabase add error:', supaErr);
+        }
+      } catch (err) {
+        console.warn('Supabase add network error:', err);
       }
     }
-
-    try {
-      await fetch('/api/menu', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newItem)
-      });
-    } catch {}
 
     return newItem;
   };
@@ -150,88 +217,80 @@ export const MenuProvider = ({ children }) => {
     let updatedItem = null;
 
     setMenuItems(prev => {
-      return prev.map(item => {
+      const updated = prev.map(item => {
         if (item.id === id) {
           updatedItem = normalizeMenuItem({ ...item, ...itemData });
           return updatedItem;
         }
         return item;
       });
+      saveToLocal(updated);
+      return updated;
     });
 
-    if (supabase) {
-      const { error: supaErr } = await supabase
-        .from('menu_items')
-        .update(itemData)
-        .eq('id', id);
-
-      if (supaErr) {
-        console.error('Supabase updateMenuItem error:', supaErr);
+    const sb = getSupabase();
+    if (sb && updatedItem) {
+      try {
+        const payload = prepareForSupabase(updatedItem);
+        await sb.from('menu_items').upsert([payload]);
+      } catch (err) {
+        console.warn('Supabase update error:', err);
       }
     }
-
-    try {
-      await fetch(`/api/menu/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(itemData)
-      });
-    } catch {}
 
     return updatedItem;
   };
 
   // 3. Toggle Availability (Sold Out state)
   const toggleAvailability = async (id, isAvailable) => {
-    setMenuItems(prev =>
-      prev.map(item =>
+    setMenuItems(prev => {
+      const updated = prev.map(item =>
         item.id === id ? { ...item, is_available: Boolean(isAvailable) } : item
-      )
-    );
+      );
+      saveToLocal(updated);
+      return updated;
+    });
 
-    if (supabase) {
-      await supabase
-        .from('menu_items')
-        .update({ is_available: Boolean(isAvailable) })
-        .eq('id', id);
+    const sb = getSupabase();
+    if (sb) {
+      try {
+        await sb
+          .from('menu_items')
+          .update({ is_available: isAvailable ? 1 : 0 })
+          .eq('id', id);
+      } catch (err) {
+        console.warn('Supabase toggle error:', err);
+      }
     }
-
-    try {
-      await fetch(`/api/menu/${id}/availability`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_available: Boolean(isAvailable) })
-      });
-    } catch {}
   };
 
   // 4. Delete Item
   const deleteMenuItem = async (id) => {
-    setMenuItems(prev => prev.filter(item => item.id !== id));
+    setMenuItems(prev => {
+      const updated = prev.filter(item => item.id !== id);
+      saveToLocal(updated);
+      return updated;
+    });
 
-    if (supabase) {
-      const { error: supaErr } = await supabase
-        .from('menu_items')
-        .delete()
-        .eq('id', id);
-
-      if (supaErr) {
-        console.error('Supabase deleteMenuItem error:', supaErr);
+    const sb = getSupabase();
+    if (sb) {
+      try {
+        await sb.from('menu_items').delete().eq('id', id);
+      } catch (err) {
+        console.warn('Supabase delete error:', err);
       }
     }
-
-    try {
-      await fetch(`/api/menu/${id}`, { method: 'DELETE' });
-    } catch {}
   };
 
   // 5. Reset to Default Uploaded Pizzas
   const resetToDefaultMenu = async () => {
     setMenuItems(INITIAL_MENU_ITEMS);
+    saveToLocal(INITIAL_MENU_ITEMS);
 
-    if (supabase) {
+    const sb = getSupabase();
+    if (sb) {
       try {
-        await supabase.from('menu_items').upsert(INITIAL_MENU_ITEMS);
+        await sb.from('menu_items').upsert(INITIAL_MENU_ITEMS.map(prepareForSupabase));
       } catch (e) {
         console.warn('Supabase reset error:', e);
       }
@@ -241,10 +300,12 @@ export const MenuProvider = ({ children }) => {
   // 6. Clear All Custom Added Menu Items
   const clearAllMenuItems = async () => {
     setMenuItems([]);
+    saveToLocal([]);
 
-    if (supabase) {
+    const sb = getSupabase();
+    if (sb) {
       try {
-        await supabase.from('menu_items').delete().neq('id', '');
+        await sb.from('menu_items').delete().neq('id', '');
       } catch (e) {
         console.warn('Supabase clear error:', e);
       }
@@ -295,7 +356,8 @@ export const MenuProvider = ({ children }) => {
     toggleAvailability,
     deleteMenuItem,
     resetToDefaultMenu,
-    clearAllMenuItems
+    clearAllMenuItems,
+    syncAllToSupabase
   };
 
   return <MenuContext.Provider value={value}>{children}</MenuContext.Provider>;

@@ -1,10 +1,54 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const getEnvOrStorage = (envKey, storageKey) => {
+  const envVal = import.meta.env[envKey];
+  if (envVal && envVal.trim() && !envVal.includes('placeholder')) {
+    return envVal.trim();
+  }
+  try {
+    const stored = localStorage.getItem(storageKey);
+    if (stored && stored.trim()) return stored.trim();
+  } catch {}
+  return '';
+};
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+let currentUrl = getEnvOrStorage('VITE_SUPABASE_URL', 'pizzoo_supabase_url');
+let currentKey = getEnvOrStorage('VITE_SUPABASE_ANON_KEY', 'pizzoo_supabase_key');
 
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
+let clientInstance = (currentUrl && currentKey) ? createClient(currentUrl, currentKey) : null;
+
+export const getSupabase = () => clientInstance;
+
+export const isSupabaseConfigured = () => Boolean(clientInstance);
+
+export const getSupabaseConfig = () => ({
+  url: currentUrl,
+  key: currentKey,
+  isConfigured: Boolean(clientInstance)
+});
+
+export const updateSupabaseConfig = (url, key) => {
+  const cleanUrl = (url || '').trim();
+  const cleanKey = (key || '').trim();
+
+  currentUrl = cleanUrl;
+  currentKey = cleanKey;
+
+  try {
+    if (cleanUrl) localStorage.setItem('pizzoo_supabase_url', cleanUrl);
+    else localStorage.removeItem('pizzoo_supabase_url');
+
+    if (cleanKey) localStorage.setItem('pizzoo_supabase_key', cleanKey);
+    else localStorage.removeItem('pizzoo_supabase_key');
+  } catch {}
+
+  if (cleanUrl && cleanKey) {
+    clientInstance = createClient(cleanUrl, cleanKey);
+  } else {
+    clientInstance = null;
+  }
+
+  return Boolean(clientInstance);
+};
+
+export const supabase = clientInstance;

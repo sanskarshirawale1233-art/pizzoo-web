@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useMenu } from '../context/MenuContext';
+import { isSupabaseConfigured, getSupabaseConfig, updateSupabaseConfig } from '../lib/supabase';
 import { 
   Plus, Edit3, Trash2, CheckCircle2, XCircle, Upload, 
-  Search, UtensilsCrossed, Image as ImageIcon, Sparkles, AlertCircle, Save, X, Laptop 
+  Search, UtensilsCrossed, Image as ImageIcon, Sparkles, AlertCircle, Save, X, Laptop, Cloud, Database, RefreshCw 
 } from 'lucide-react';
 
 export const AdminMenuManager = () => {
-  const { menuItems, addMenuItem, updateMenuItem, toggleAvailability, deleteMenuItem, resetToDefaultMenu, loading } = useMenu();
+  const { menuItems, addMenuItem, updateMenuItem, toggleAvailability, deleteMenuItem, resetToDefaultMenu, syncAllToSupabase, loading } = useMenu();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
@@ -14,6 +15,14 @@ export const AdminMenuManager = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
+
+  // Supabase Sync State
+  const [isSupaModalOpen, setIsSupaModalOpen] = useState(false);
+  const [supaConfig, setSupaConfig] = useState(getSupabaseConfig());
+  const [supaUrlInput, setSupaUrlInput] = useState(supaConfig.url || '');
+  const [supaKeyInput, setSupaKeyInput] = useState(supaConfig.key || '');
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatusMsg, setSyncStatusMsg] = useState('');
 
   // Form State
   const [formData, setFormData] = useState({
@@ -186,6 +195,37 @@ export const AdminMenuManager = () => {
     }
   };
 
+  const handleSaveSupabase = async (e) => {
+    e.preventDefault();
+    setIsSyncing(true);
+    setSyncStatusMsg('');
+    const configured = updateSupabaseConfig(supaUrlInput, supaKeyInput);
+    setSupaConfig(getSupabaseConfig());
+
+    if (configured) {
+      const res = await syncAllToSupabase();
+      if (res.success) {
+        setSyncStatusMsg(`✅ Success! Synced ${res.count} menu items to Supabase.`);
+      } else {
+        setSyncStatusMsg(`⚠️ Saved credentials, but Supabase reported: ${res.error}. Make sure "menu_items" table exists.`);
+      }
+    } else {
+      setSyncStatusMsg('Supabase credentials cleared. Operating in local storage mode.');
+    }
+    setIsSyncing(false);
+  };
+
+  const handleQuickSync = async () => {
+    setIsSyncing(true);
+    const res = await syncAllToSupabase();
+    if (res.success) {
+      alert(`✅ Synced ${res.count} items with Supabase!`);
+    } else {
+      alert(`⚠️ Sync issue: ${res.error}\n\nMake sure your Supabase table "menu_items" exists.`);
+    }
+    setIsSyncing(false);
+  };
+
   const filteredItems = menuItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           (item.italian_title && item.italian_title.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -210,6 +250,19 @@ export const AdminMenuManager = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setIsSupaModalOpen(true)}
+            className={`px-4 py-3 rounded-2xl text-xs font-bold border shadow-sm flex items-center gap-1.5 transition-all ${
+              supaConfig.isConfigured
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'
+            }`}
+            title="Configure Supabase Cloud Sync"
+          >
+            <Cloud className="w-4 h-4 text-emerald-600" />
+            <span>{supaConfig.isConfigured ? '🟢 Supabase Synced' : '⚡ Connect Supabase'}</span>
+          </button>
+
           <button
             onClick={() => {
               if (window.confirm("Reload the original pizzas with their uploaded photos and sizes?")) {
@@ -659,6 +712,92 @@ export const AdminMenuManager = () => {
                   <Save className="w-4 h-4" />
                   <span>Save Menu Item</span>
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Supabase Cloud Sync Modal */}
+      {isSupaModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative text-stone-900">
+            <button
+              onClick={() => setIsSupaModalOpen(false)}
+              className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 p-2 rounded-full hover:bg-stone-100"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2 mb-2 text-emerald-600">
+              <Database className="w-6 h-6" />
+              <h3 className="font-serif text-xl font-bold">Supabase Cloud Sync</h3>
+            </div>
+            <p className="text-xs text-stone-500 mb-4 leading-relaxed">
+              Connect your Supabase project so menu changes sync across both mobile and laptop instantly and never get deleted on refresh.
+            </p>
+
+            <form onSubmit={handleSaveSupabase} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-stone-700 block mb-1">
+                  Supabase Project URL
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://xyzcompany.supabase.co"
+                  value={supaUrlInput}
+                  onChange={(e) => setSupaUrlInput(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-none focus:border-emerald-600"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-stone-700 block mb-1">
+                  Supabase Anon Public Key (API Key)
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  value={supaKeyInput}
+                  onChange={(e) => setSupaKeyInput(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-none focus:border-emerald-600 font-mono"
+                />
+              </div>
+
+              {syncStatusMsg && (
+                <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl text-xs">
+                  {syncStatusMsg}
+                </div>
+              )}
+
+              <div className="pt-2 flex flex-wrap items-center justify-between gap-2">
+                {supaConfig.isConfigured && (
+                  <button
+                    type="button"
+                    onClick={handleQuickSync}
+                    disabled={isSyncing}
+                    className="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                    <span>Sync All Current Pizzas Now</span>
+                  </button>
+                )}
+
+                <div className="flex items-center gap-2 ml-auto">
+                  <button
+                    type="button"
+                    onClick={() => setIsSupaModalOpen(false)}
+                    className="px-4 py-2.5 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-50 text-xs font-bold"
+                  >
+                    Close
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSyncing}
+                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md flex items-center gap-1.5"
+                  >
+                    {isSyncing ? 'Saving & Syncing...' : 'Save & Sync Cloud'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

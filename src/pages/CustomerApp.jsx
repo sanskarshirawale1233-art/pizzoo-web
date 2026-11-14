@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { IntroScreen } from '../components/IntroScreen';
 import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { StatsBanner } from '../components/StatsBanner';
@@ -18,9 +17,6 @@ export const CustomerApp = () => {
 
   return (
     <div className="bg-[#0D0700] text-white font-body selection:bg-trattoria-red selection:text-white min-h-screen">
-      {/* Animated Pizza Oven Intro Screen */}
-      <IntroScreen />
-
       {/* Navigation Bar */}
       <Navbar />
 
